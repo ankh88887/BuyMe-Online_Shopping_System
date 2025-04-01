@@ -1,36 +1,37 @@
-export default function Home(props){
+import ProductCell from "./ProductCell"
+import style from './Home.module.css'
+
+export default function Home(props) {
     return (
         <div>
-            <h1>Home1</h1>
-            <h1>Home2</h1>
-            <h1>Home3</h1>
-            <h1>Home4</h1>
-            <h1>Home5</h1>
-            <h1>Home6</h1>
-            <h1>Home7</h1>
-            <h1>Home8</h1>
-            <h1>Home9</h1>
-            <h1>Home0</h1>
-            <h1>Home1</h1>
-            <h1>Home2</h1>
-            <h1>Home3</h1>
-            <h1>Home4</h1>
-            <h1>Home5</h1>
-            <h1>Home6</h1>
-            <h1>Home7</h1>
-            <h1>Home8</h1>
-            <h1>Home9</h1>
-            <h1>Home0</h1>
-            <h1>Home1</h1>
-            <h1>Home2</h1>
-            <h1>Home3</h1>
-            <h1>Home4</h1>
-            <h1>Home5</h1>
-            <h1>Home6</h1>
-            <h1>Home7</h1>
-            <h1>Home8</h1>
-            <h1>Home9</h1>
-            <h1>Home0</h1>
+            <div>
+                Carousel of top rated products
+            </div>
+
+            <div className={style.productContainer}>
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+                <ProductCell productID="1" />
+            </div>
         </div>
     )
 }

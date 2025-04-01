@@ -26,30 +26,10 @@ export default function ProductData() {
     if (!product) {
         return <p>Loading...</p> // Show loading message while fetching
     }
-    
+
     return (
         <div>
-            <div className="ProductDetail">
-                <h1>{product.name} 產品資料</h1>
-                <table width="100%">
-                    <tbody>
-                        <tr>
-                            <td align="right">
-                                <img
-                                    src={process.env.PUBLIC_URL + '/Images/' + product.image}
-                                    alt={product.name}
-                                    width="400"
-                                />
-                            </td>
-                            <td width="45%" padding="10">
-                                <p>名稱 : {product.name}</p>
-                                <p>售價 : {product.price}元</p>
-                                <p>描述 : {product.description}</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            call product data!
         </div>
     )
 }

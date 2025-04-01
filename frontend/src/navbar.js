@@ -23,16 +23,16 @@ export default function NavBar() {
             <div className={styles.middle}>
                 <input type="text" placeholder="Search..." className={styles.searchBar} />
                 <Link to="/search" className={styles.imgButton}>
-                    <img src={process.env.PUBLIC_URL+'/img/search.png'} alt="Search" className={styles.imgIcon} />
+                    <img src={process.env.PUBLIC_URL + '/Images/search.png'} alt="Search" className={styles.imgIcon} />
                 </Link>
             </div>
 
             {/* Right Section */}
             <div className={styles.right}>
                 {isAdmin && <Link to="/admin" className={styles.navButton}>Admin Panel</Link>}
-                <button onClick={logoutOnClick} className={styles.navButton}>Logout</button>             
+                <button onClick={logoutOnClick} className={styles.navButton}>Logout</button>
                 <Link to="/cart" className={styles.imgButton}>
-                    <img src={process.env.PUBLIC_URL+'/img/shoppingCart.png'} alt="Shopping Cart" className={styles.imgIcon} />
+                    <img src={process.env.PUBLIC_URL + '/Images/shoppingCart.png'} alt="Shopping Cart" className={styles.imgIcon} />
                 </Link>
             </div>
         </nav>
