@@ -1,0 +1,36 @@
+export default function Home(props){
+    return (
+        <div>
+            <h1>Home1</h1>
+            <h1>Home2</h1>
+            <h1>Home3</h1>
+            <h1>Home4</h1>
+            <h1>Home5</h1>
+            <h1>Home6</h1>
+            <h1>Home7</h1>
+            <h1>Home8</h1>
+            <h1>Home9</h1>
+            <h1>Home0</h1>
+            <h1>Home1</h1>
+            <h1>Home2</h1>
+            <h1>Home3</h1>
+            <h1>Home4</h1>
+            <h1>Home5</h1>
+            <h1>Home6</h1>
+            <h1>Home7</h1>
+            <h1>Home8</h1>
+            <h1>Home9</h1>
+            <h1>Home0</h1>
+            <h1>Home1</h1>
+            <h1>Home2</h1>
+            <h1>Home3</h1>
+            <h1>Home4</h1>
+            <h1>Home5</h1>
+            <h1>Home6</h1>
+            <h1>Home7</h1>
+            <h1>Home8</h1>
+            <h1>Home9</h1>
+            <h1>Home0</h1>
+        </div>
+    )
+}
