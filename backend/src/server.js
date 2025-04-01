@@ -9,15 +9,10 @@ app.use(bodyParser.json());
 
 const port = 5005;
 
-
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
 
-
 connectDB();
-
-
-
 
 app.get('/', (req, res) => {
   res.send('Hello from server!');
