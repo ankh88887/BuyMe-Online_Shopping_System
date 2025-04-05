@@ -8,7 +8,7 @@ export default function Home(props) {
                 Carousel of top rated products
             </div>
 
-            <div className={style.productContainer}>
+            <div className={style.scrollContainer}>
                 <ProductCell productID="1" />
                 <ProductCell productID="1" />
                 <ProductCell productID="1" />

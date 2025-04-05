@@ -5,7 +5,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 10px;
+    margin: 0 auto;
     box-sizing: border-box;
     background-color: #f0f0f0;
     border: 1px solid #ccc;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
 }
