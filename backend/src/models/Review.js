@@ -17,7 +17,7 @@ reviewSchema.methods.getProductID = function(){
 };
 
 reviewSchema.methods.getUserID = function(){
-    return this.getUserID;
+    return this.UserID;
 };
 
 reviewSchema.methods.getComment = function(){

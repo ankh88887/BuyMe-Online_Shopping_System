@@ -23,7 +23,7 @@ productSchema.methods.setProductName = function (newProductName) {
 };
 
 productSchema.methods.getProductImageDir = function() {
-    return productSchema.productImageDir;
+    return this.productImageDir;
 };
 
 productSchema.methods.setProductImageDir = function(productImageDir) {
@@ -47,7 +47,7 @@ productSchema.methods.setDescription = function(description){
 };
 
 productSchema.methods.getSock = function(){
-    return productSchema.stock;
+    return this.stock;
 };
 
 productSchema.methods.setSock = function(stock){
@@ -58,16 +58,16 @@ productSchema.methods.getRateCount = function(){
     return this.rateCount;
 };
 
-productSchema.methods.setRateCount = function(rate){
-    this.rate = rate;
+productSchema.methods.setRateCount = function(rateCount){
+    this.rateCount = rateCount;
 };
 
 productSchema.methods.getTotalRate = function(){
     return this.totalRate;
 };
 
-productSchema.methods.setTotalRate = function(){
-    return this.totalRate;
+productSchema.methods.setTotalRate = function(totalRate){
+    this.totalRate = totalRate;
 };
 
 const Product = mongoose.model('Product', productSchema);

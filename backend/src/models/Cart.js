@@ -15,9 +15,6 @@ cartSchema.methods.getUser = function(){
     return this.userID;
 };
 
-cartSchema.methods.getPurchaseDate = function(){
-    return this.purchaseDate;
-};
 
 cartSchema.methods.getPurchaseDate = function(){
     return this.purchaseDate;
