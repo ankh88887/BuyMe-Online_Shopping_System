@@ -34,6 +34,9 @@ import NavBar from './navbar'
 import Home from "./Home"
 import ProductMain from './ProductMain'
 import Search from './search'
+import AdminPage from './Pages/Admin'
+import UserProfilePage from './Pages/UserProfile'
+import ResetPasswordPage from './Pages/ResetPassword'
 
 function App() {
   const [navHeight, setNavHeight] = useState(0);
@@ -56,6 +59,12 @@ function App() {
             <Route path="/product" element={<ProductMain />}>
               <Route path=":id" element={<ProductMain />} />
             </Route>
+
+            <Route path="/admin" element={<AdminPage />} />
+
+            <Route path="/profile" element={<UserProfilePage />} />
+
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route path="/search" element={<Search />}>
               <Route path=":id" element={<Search />} />
