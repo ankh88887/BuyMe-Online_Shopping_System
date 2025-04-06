@@ -3,8 +3,8 @@ const User = require('../models/User');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  const { userID, isAdmin, username, password, email, address } = req.body;
-  const user = new User({ userID, isAdmin, username, password, email, address });
+  const { userID, isAdmin, userName, password, email, address } = req.body;
+  const user = new User({ userID, isAdmin, userName, password, email, address });
   await user.save();
   res.status(201).send(user);
 });
