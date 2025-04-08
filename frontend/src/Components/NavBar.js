@@ -1,45 +1,40 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import logo from "../Images/BuyMe_Logo_Transparent.PNG";
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import styles from './NavBar.module.css';
 
-class NavBar extends React.Component {
-    render() {
-        return (
-            <nav class="navbar sticky-top navbar-expand-lg bg-white dark-bg">
-                <div class="container-fluid">
-                    <Link class="nav-brand" to="/">
-                        <img src={logo} alt="BuyMeLogo" height="50" />
-                    </Link>
-                    <button
-                        class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation"
-                    >
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <Link class="nav-link active" to="/">
-                                    Home
-                                </Link>
-                            </li>
+export default function NavBar() {
+    let [isAdmin, setIsAdmin] = useState(false)
 
-                            <li class="nav-item">
-                                <Link class="nav-link" to="/product">
-                                    Product
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        );
+    const logoutOnClick = () => {
+        setIsAdmin(!isAdmin)
+        console.log(isAdmin)
     }
-}
 
-export default NavBar;
+    return (
+        <nav className={styles.nav}>
+            {/* Left Section */}
+            <div className={styles.left}>
+                <Link to="/" className={styles.navButton}>Home</Link>
+                <Link to="/profile" className={styles.navButton}>User Profile</Link>
+                <Link to="/history" className={styles.navButton}>Purchase History</Link>
+            </div>
+
+            {/* Middle Section */}
+            <div className={styles.middle}>
+                <input type="text" placeholder="Search..." className={styles.searchBar} />
+                <Link to="/search" className={styles.imgButton}>
+                    <img src={process.env.PUBLIC_URL + '/Images/search.png'} alt="Search" className={styles.imgIcon} />
+                </Link>
+            </div>
+
+            {/* Right Section */}
+            <div className={styles.right}>
+                {isAdmin && <Link to="/admin" className={styles.navButton}>Admin Panel</Link>}
+                <button onClick={logoutOnClick} className={styles.navButton}>Logout</button>
+                <Link to="/cart" className={styles.imgButton}>
+                    <img src={process.env.PUBLIC_URL + '/Images/shoppingCart.png'} alt="Shopping Cart" className={styles.imgIcon} />
+                </Link>
+            </div>
+        </nav>
+    );
+}
