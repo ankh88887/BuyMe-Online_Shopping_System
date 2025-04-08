@@ -1,0 +1,35 @@
+.NoOfResults {
+    padding: 20px 0 0 20px;
+}
+
+.Flter{
+    padding: 0 20px;
+}
+
+.textBox{
+    max-width: 120px;
+    margin: 0 10px;
+}
+
+.FilterButton{
+    margin: 0 20px;
+    border-radius: 8px;
+}
+
+
+.scrollContainer {
+    width: 96%;
+    min-width: 600px;
+    max-height: 440px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+}

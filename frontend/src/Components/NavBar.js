@@ -4,10 +4,15 @@ import styles from './NavBar.module.css';
 
 export default function NavBar() {
     let [isAdmin, setIsAdmin] = useState(false)
+    const [keywords, setKeywords] = useState('')
 
     const logoutOnClick = () => {
         setIsAdmin(!isAdmin)
         console.log(isAdmin)
+    }
+
+    const handleKeywordsChange = (event) => {
+        setKeywords(event.target.value);
     }
 
     return (
@@ -21,8 +26,8 @@ export default function NavBar() {
 
             {/* Middle Section */}
             <div className={styles.middle}>
-                <input type="text" placeholder="Search..." className={styles.searchBar} />
-                <Link to="/search" className={styles.imgButton}>
+                <input type="text" placeholder="Search..." className={styles.searchBar} value={keywords} onChange={handleKeywordsChange} />
+                <Link to={'/search/' + keywords} className={styles.imgButton}>
                     <img src={process.env.PUBLIC_URL + '/Images/search.png'} alt="Search" className={styles.imgIcon} />
                 </Link>
             </div>

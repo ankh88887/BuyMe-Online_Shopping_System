@@ -38,6 +38,29 @@ app.get('/api/product/:id', (req, res) => {
     }
 });
 
+app.get('/api/product/search/:keywords', (req, res) => {
+    const keyword = req.params.keywords.toLowerCase();
+    console.log('Searching for keywords:', keyword); // Log the search keywords
+    filteredProducts = [];
+    products.forEach(p => {
+        if (p.name.toLowerCase().includes(keyword) || p.description.toLowerCase().includes(keyword)) {
+            filteredProducts.push(p);
+            console.log('Product found:', filteredProducts[filteredProducts.length - 1].name); // Log the found product
+        }
+        else {
+            console.log('Product not found:', p.name); // Log the not found product
+
+        }
+    }
+    )
+    if (filteredProducts) {
+        console.log(filteredProducts.length + ' Product found');
+        res.json(filteredProducts);
+    } else {
+        res.status(404).json({ error: 'Product not found' });
+    }
+});
+
 // Start the server
 app.listen(PORT, async () => {
     await initializeProducts(); // Load products on server start

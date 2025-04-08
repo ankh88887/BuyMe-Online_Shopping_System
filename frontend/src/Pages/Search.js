@@ -1,12 +1,8 @@
-import { useParams } from "react-router-dom"
+import React from "react";
+import SearchPage from "../Components/SearchPage";
 
-export default function Search() {
-
-    let params = useParams()
-
-    return (
-        <div>
-            <h1>{'#' + params.id + 'ProductInfo'}</h1>
-        </div>
-    )
+function Search() {
+    return <SearchPage />;
 }
+
+export default Search;
