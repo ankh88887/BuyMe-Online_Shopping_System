@@ -37,7 +37,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route path="/search" element={<Search />}>
-              <Route path=":id" element={<Search />} />
+              <Route path=":keywords" element={<Search />} />
             </Route>
 
             <Route path="*" element={<p>404 not found</p>} />
