@@ -1,0 +1,112 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+body{
+background-color:white;
+}
+.login-box{
+    position: relative;
+    min-height: 90vh;
+    z-index: 0;
+    background: white;
+    padding: 150px;
+    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: left;
+}
+
+.container{
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.login-box h2{
+    line-height: 40px;
+    margin-bottom: 5px;
+    font-size: 25px;
+    font-weight: 500;
+    color: black;
+    text-align: center;
+}
+
+.login-box .main{
+    position: relative;
+    display: flex;
+    margin: 30px 0;
+}
+
+.content{
+    flex-basis: 60%;
+    padding: 3em 3em;
+    background: white;
+    box-shadow: 2px 9px 49px -17px rgba(0,0,0,1);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.form-img{
+    flex-basis: 50%;
+    background: white;
+    background-size: cover;
+    padding: 40px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    align-items: center;
+    display:grid;
+}
+ 
+.form-img img{
+    max-width: 100%;
+}
+p{
+    color:black;
+    font-size: 16px;
+    line-height: 25px;
+    opacity: 0.6;
+    text-align: center;
+}
+.btn,button{
+    border-radius: 35px;
+}
+.btn:hover,
+button:hover{
+    transition: 0.5s ease;
+}
+a{
+    text-decoration: none;
+}
+.login-box form{
+    margin: 30px 0; 
+}
+.login-box input{
+    outline: none;
+    margin-bottom: 15px;
+    font-stretch: 16px;;
+    color:black;
+    text-align: left;
+    padding : 14px 20px;
+    width: 100%;
+    display: inline-block;
+    box-sizing: border-box;
+    border: none;
+    background: white;
+    transition: 0.3s ease;
+}
+.login-box input:focus{
+    background: transparent;
+    border: 1px solid black;
+} 
+.login-box button{
+    font-size: 18px;
+    color: white;
+    width: 100%;
+    background: black;
+    border: none;
+    padding: 14px 15px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
