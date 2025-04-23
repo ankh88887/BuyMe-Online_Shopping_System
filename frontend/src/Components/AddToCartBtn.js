@@ -10,21 +10,21 @@ export default function AddToCartBtn({ productID }) {
     };
 
     const Subtract = () => {
-        setQuantity((quantity) =>
-            quantity === 0 ? 0 : quantity - 1
-        );
+        if (quantity === 0) 
+            return;
+        setQuantity((quantity) => (quantity - 1));
     };
 
     const AddToCart = () =>{
-        console.log("Product ID: " + productID + " added to cart with quantity: " + quantity)
+        alert(`Added ${quantity} items of Product ID: ${productID} to the cart!`);
     }
 
     return (
-        <div style={{ display: "flex", alignItems: "center" }}>
-            <span className={style.BtnAble} onClick={Subtract}>⊖</span>
+        <div style={{ display: "flex"}}>
+            <button className={quantity === 0 ? style.BtnDisable : style.BtnAble} onClick={Subtract} disabled={quantity === 0}>⊖</button>
             <span className={style.Qty}>{quantity}</span>
-            <span className={style.BtnAble} onClick={Add}>⊕</span>
-            <button className={style.AddToCart} onClick={AddToCart}>Add to Cart</button>
+            <button className={style.BtnAble} onClick={Add}>⊕</button>
+            <button className={style.AddToCart} onClick={AddToCart} disabled={quantity === 0} >Add to Cart</button>
         </div>
     )
 }
