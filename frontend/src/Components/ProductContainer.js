@@ -27,7 +27,7 @@ export default function ProductContainer({ productID }) {
 
     return (
         <div className={styles.productContainer}>
-            <text className={styles.productName}>{product.name}</text>
+            <p className={styles.productName}>{product.name}</p>
             <div className={styles.productDetails}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} />
                 <table>
