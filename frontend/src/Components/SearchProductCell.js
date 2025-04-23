@@ -16,9 +16,12 @@ export default function SearchProductCell({ productJSON }) {
             <Link to={'/product/' + product.id}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} className={styles.image} />
             </Link>
-            <div className={styles.productDetailContainer}>
-                <h2 className={styles.productName}>{product.name}</h2>
-                <p className={styles.productPrice}>${product.price}</p>
+            <div className={styles.productContainer}>
+                <div className={styles.productDetailContainer}>
+                    <h2 className={styles.productName}>{product.name}</h2>
+                    <p className={styles.productPrice}>${product.price}</p>
+                </div>
+                <button className={styles.addToCartButton}>Add to Cart</button>
             </div>
         </div>
     )
