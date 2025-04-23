@@ -52,17 +52,25 @@ export default function Search() {
     return (
         <div>
             <h1 className={style.NoOfResults}>{product.length} serach results for "{keywords}"</h1>
-            <h2 className={style.Flter}>Filter price range between:
-                <input type="number" placeholder="min" className={style.textBox} min="0" max={maxPriceLimit} value={minPriceLimit} onChange={handleMinPriceLimit} />~
-                <input type="number" placeholder="max" className={style.textBox} min={minPriceLimit} value={maxPriceLimit} onChange={handleMaxPriceLimit} />
-                <button className={style.FilterButton} onClick={filterProduct}>Confirm</button>
-            </h2>
-
-            <div className={style.scrollContainer}>
-                {filteredProduct.map((productItem) => (
-                    <SearchProductCell key={productItem.id} productJSON={productItem} />
-                ))}
-            </div>
+            {
+                (product.length) ?
+                <div>
+                    <h2 className={style.Flter}>Filter price range between:
+                        <input type="number" placeholder="min" className={style.textBox} min="0" max={maxPriceLimit} value={minPriceLimit} onChange={handleMinPriceLimit} />~
+                        <input type="number" placeholder="max" className={style.textBox} min={minPriceLimit} value={maxPriceLimit} onChange={handleMaxPriceLimit} />
+                        <button className={style.FilterButton} onClick={filterProduct}>Confirm</button>
+                    </h2>
+        
+                    <div className={style.scrollContainer}>
+                        {filteredProduct.map((productItem) => (
+                            <SearchProductCell key={productItem.id} productJSON={productItem} />
+                        ))}
+                    </div>
+                </div> :
+                <h2 style={{ textAlign: 'center', marginTop: '20px' }}>
+                    Try another keyword or check your spelling.
+                </h2>
+            }
         </div>
     )
 }
