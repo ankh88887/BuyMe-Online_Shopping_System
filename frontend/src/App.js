@@ -7,6 +7,9 @@ import Search from './Pages/Search'
 import AdminPage from './Pages/Admin'
 import UserProfilePage from './Pages/UserProfile'
 import ResetPasswordPage from './Pages/ResetPassword'
+import PurchaseHistory from './Pages/PurchaseHistory'
+import ShoppingCart from './Pages/ShoppingCart'
+import Payment from './Pages/Payment'
 
 function App() {
   const [navHeight, setNavHeight] = useState(0);
@@ -36,9 +39,15 @@ function App() {
 
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
+            <Route path="/history" element={<PurchaseHistory />} />
+            
+            <Route path="/cart" element={<ShoppingCart />} />
+
             <Route path="/search" element={<Search />}>
               <Route path=":id" element={<Search />} />
             </Route>
+
+            <Route path="/payment" element={<Payment/>}/>
 
             <Route path="*" element={<p>404 not found</p>} />
           </Routes >

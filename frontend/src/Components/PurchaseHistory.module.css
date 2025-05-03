@@ -1,0 +1,140 @@
+.purchaseBackground {
+    background-color: #fdf9de;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.purchaseContainer {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.purchaseHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    background-color: #1c3455;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+}
+
+.purchaseHeader h1 {
+    color: white;
+    margin: 0;
+    font-size: 28px;
+}
+
+.purchaseSection {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.purchaseSection h3 {
+    color: #1c3455;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.orderGroup {
+    margin-bottom: 30px;
+}
+
+.orderGroup table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.orderGroup th,
+.orderGroup td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.orderGroup th {
+    background-color: #1c3455;
+    color: white;
+    font-weight: bold;
+}
+
+.orderGroup tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.orderGroup tr:hover {
+    background-color: rgba(28, 52, 85, 0.1);
+}
+
+.orderGroup td {
+    background-color: #fff;
+}
+
+.formInput {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: #1c3455;
+}
+
+.btnSubmit {
+    background-color: #1c3455;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btnSubmit:hover {
+    background-color: #142a47;
+}
+
+.btnSubmit:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .purchaseBackground {
+        padding: 10px;
+    }
+
+    .purchaseContainer {
+        padding: 20px;
+    }
+
+    .orderGroup th,
+    .orderGroup td {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .formInput {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .btnSubmit {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
