@@ -1,30 +1,67 @@
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import style from "./AddToCartBtn.module.css"
+import {CartContext} from "./CartContext"
 
 export default function AddToCartBtn({ productID }) {
 
-    const [ quantity, setQuantity ] = useState(0);
+    const {cartItems, setCartItems} = useContext(CartContext)
+    let productIndexInCart = cartItems.findIndex((element)=>{
+        return element.id === productID
+    })
+    let [numInCart,setNumInCart] = useState(
+        (productIndexInCart===-1) ? 0 : cartItems[productIndexInCart].quantity
+    )
 
-    const Add = () => {
-        setQuantity((quantity) => (quantity + 1));
-    };
+    const Add = ()=>{
 
-    const Subtract = () => {
-        if (quantity === 0) 
-            return;
-        setQuantity((quantity) => (quantity - 1));
-    };
+        if(productIndexInCart===-1)
+        {
+            setCartItems(
+                [{
+                    id : productID,
+                    quantity:1
+                },
+                ...cartItems]
+            )
+        }
+        else
+        {
+            let newCartArray = [...cartItems]
+            newCartArray[productIndexInCart].quantity++
+            setCartItems(newCartArray)
+        }
 
-    const AddToCart = () =>{
-        alert(`Added ${quantity} items of Product ID: ${productID} to the cart!`);
+        setNumInCart(numInCart+1)
+    }
+
+    const Subtract = ()=>{
+
+        if(cartItems[productIndexInCart].quantity===1)
+        {
+            let newCartArray = [...cartItems]
+            newCartArray.splice(productIndexInCart,1)
+            setCartItems(newCartArray)
+        }
+        else
+        {
+            let newCartArray = [...cartItems]
+            newCartArray[productIndexInCart].quantity--
+            setCartItems(newCartArray)
+        }
+
+        setNumInCart(numInCart-1)
+    }
+    const updateCart = ()=>{
+        let newCartArray = [...cartItems]
+        alert(`Product ID: ${newCartArray[productIndexInCart].id} has ${newCartArray[productIndexInCart].quantity} in the cart!`);
     }
 
     return (
         <div style={{ display: "flex"}}>
-            <button className={quantity === 0 ? style.BtnDisable : style.BtnAble} onClick={Subtract} disabled={quantity === 0}>⊖</button>
-            <span className={style.Qty}>{quantity}</span>
+            <button className={numInCart === 0 ? style.BtnDisable : style.BtnAble} onClick={Subtract} disabled={numInCart === 0}>⊖</button>
+            <span className={style.Qty}>{numInCart}</span>
             <button className={style.BtnAble} onClick={Add}>⊕</button>
-            <button className={style.AddToCart} onClick={AddToCart} disabled={quantity === 0} >Add to Cart</button>
+            <button className={style.AddToCart} onClick={updateCart} disabled={numInCart === 0} >Add to Cart</button>
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import AddToCart from './AddToCartBtn'
+import AddToCart from './UpdateCartBtn'
 import styles from './ProductContainer.module.css';
 
 export default function ProductContainer({ productID }) {
