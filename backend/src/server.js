@@ -9,7 +9,7 @@ let products = [];
 // Load products from JSON file
 const initializeProducts = async () => {
     try {
-        const data = await fs.readFile('./ProductData.json', 'utf-8'); // Path to your JSON file
+        const data = await fs.readFile('./src/ProductData.json', 'utf-8'); // Path to your JSON file
         const parsedData = JSON.parse(data); // Parse JSON into an object
         products = parsedData.Product || []; // Extract the "Product" array or default to an empty array
         console.log('Products loaded:', products);
