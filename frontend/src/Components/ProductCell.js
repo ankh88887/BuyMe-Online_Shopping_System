@@ -6,7 +6,7 @@ export default function ProductCell({ productID }) {
     const [product, setProduct] = useState(null)
     const fetchProduct = async (productID) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/product/${productID}`) // Backend API
+            const response = await fetch(`http://localhost:5005/api/product/${productID}`) // Backend API
             if (!response.ok) {
                 throw new Error('Product not found')
             }

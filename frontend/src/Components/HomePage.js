@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ProductCell from "./ProductCell"
-import style from './HomePage.module.css'
+import style from "./HomePage.module.css"
 
 export default function Home(props) {
     const [currentIndex, setCurrentIndex] = useState(0);
