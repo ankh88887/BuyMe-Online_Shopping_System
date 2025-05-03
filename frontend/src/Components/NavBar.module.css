@@ -23,7 +23,7 @@ nav {
 .navButton {
     width: 180px;
     height: 80px;
-    line-height: 80px; /* Center text vertically */
+    line-height: 80px; 
     background-color: #fdf9de;
     border: none;
     border-radius: 8px;

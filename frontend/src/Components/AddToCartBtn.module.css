@@ -1,0 +1,46 @@
+.BtnAble {
+    color: #000000;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+.BtnAble:hover {
+    color: #777777;
+    background-color: transparent;
+}
+
+.BtnDisable {
+    color: #cccccc;
+    background-color: transparent;
+    border: none;
+}
+.BtnDisable:hover {
+    background-color: transparent;
+}
+
+
+.Qty {
+    display: inline-block;
+    min-width: 50px;
+    min-height: 35px;
+    font-size: 20px;
+    text-align: center; 
+    border: 1px solid #000000;
+    margin: 10px;
+}
+
+.AddToCart {
+    width: 160px;
+    height: 50px;
+    font-size: 20px;
+    margin-left: 30px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.AddToCart:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    pointer-events: none;
+}

@@ -1,0 +1,54 @@
+.productContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.productName {
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.productDetails {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+img {
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 16px;
+    left: 0.1%;
+}
+
+table {
+    width: 1110px;
+    height: 450px;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 3px solid black;
+    padding: 10px;
+    text-align: left;
+    text-align: start;
+    font-size: 30px;
+}
+
+@media (max-width: 1500px) {
+    .contentContainer {
+        flex-direction: column; /* Stack image and table vertically if space is limited */
+        align-items: center;
+    }
+
+    .productImage {
+        left: 0; /* Reset the position when stacked */
+    }
+}
