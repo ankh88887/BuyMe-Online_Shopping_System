@@ -4,6 +4,8 @@ const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const connectDB = require('./db');
 
+const fs = require('fs').promises;
+const cors = require('cors'); // To allow requests from the frontend
 const app = express();
 app.use(bodyParser.json());
 
