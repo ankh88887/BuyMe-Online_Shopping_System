@@ -4,54 +4,54 @@ import SearchProductCell from "./SearchProductCell"
 import style from "./SearchPage.module.css"
 
 export default function Search() {
-    const { keywords } = useParams();
-    const [product, setProduct] = useState(null);
-    const [filteredProduct, setFilteredProduct] = useState(null);
-    const [minPriceLimit, setMinPriceLimit] = useState(0);
-    const [maxPriceLimit, setMaxPriceLimit] = useState(100);
+    const { keywords } = useParams()
+    const [product, setProduct] = useState(null)
+    const [filteredProduct, setFilteredProduct] = useState(null)
+    const [minPriceLimit, setMinPriceLimit] = useState(0)
+    const [maxPriceLimit, setMaxPriceLimit] = useState(100)
 
     // Fetch product data from backend
     const fetchProduct = async (productKeywords) => {
         try {
-            console.log("Fetching products with keywords:", productKeywords);
-            const response = await fetch(`http://localhost:5005/api/products/search/${productKeywords}`);
+            console.log("Fetching products with keywords:", productKeywords)
+            const response = await fetch(`http://localhost:5005/api/products/search/${productKeywords}`)
             if (!response.ok) {
-                throw new Error("Product not found");
+                throw new Error("Product not found")
             }
-            const productData = await response.json();
-            console.log("Product data fetched:",productData);
-            setProduct(productData.products);
-            setFilteredProduct(productData.products);
+            const productData = await response.json()
+            console.log("Product data fetched:",productData)
+            setProduct(productData.products)
+            setFilteredProduct(productData.products)
         } catch (error) {
-            console.error("Error fetching product:", error);
-            setProduct([]); // Set to empty array if no product found
+            console.error("Error fetching product:", error)
+            setProduct([])
         }
     }
 
     useEffect(() => {
-        console.log("useEffect triggered with keywords:", keywords);
-        fetchProduct(keywords);
-    }, [keywords]);
+        console.log("useEffect triggered with keywords:", keywords)
+        fetchProduct(keywords)
+    }, [keywords])
 
     if (!product) {
         return <p>Loading...</p>
     }
 
     const handleMinPriceLimit = (event) => {
-        setMinPriceLimit(event.target.value);
+        setMinPriceLimit(event.target.value)
     }
 
     const handleMaxPriceLimit = (event) => {
-        setMaxPriceLimit(event.target.value);
+        setMaxPriceLimit(event.target.value)
     }
 
     const filterProduct = () => {
         const filtered = product.filter(
             (productItem) =>
                 productItem.price >= minPriceLimit && productItem.price <= maxPriceLimit
-        );
-        setFilteredProduct(filtered);
-    };
+        )
+        setFilteredProduct(filtered)
+    }
 
     return (
         <div>
