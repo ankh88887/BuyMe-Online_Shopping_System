@@ -69,7 +69,7 @@ export default function ProductData() {
     useEffect(() => {
         fetchProduct(id) // Fetch product when component mounts
         fetechreview(id) // Fetch review when component mounts        
-    }, [])
+    }, [id])
 
     if (!product) {
         return <p>Loading...</p> // Show loading message while fetching
