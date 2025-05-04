@@ -2,24 +2,11 @@ import { useEffect, useState } from 'react'
 import AddToCart from './UpdateCartBtn'
 import styles from './ProductContainer.module.css';
 
-export default function ProductContainer({ productID }) {
+export default function ProductContainer({ productJSON }) {
     const [product, setProduct] = useState(null)
-    const fetchProduct = async (productID) => {
-        try {
-            const response = await fetch(`http://localhost:5005/api/products/${productID}`) // Backend API
-            if (!response.ok) {
-                throw new Error('Product not found')
-            }
-            const productData = await response.json()
-            setProduct(productData); // Update state with product data
-        } catch (error) {
-            console.error('Error fetching product:', error)
-        }
-    }
-
     useEffect(() => {
-        fetchProduct(productID) // Fetch product when component mounts
-    }, [productID])
+        setProduct(productJSON);
+    }, [productJSON])
 
     if (!product) {
         return <p>Loading...</p> // Show loading message while fetching
@@ -41,7 +28,7 @@ export default function ProductContainer({ productID }) {
                             <td>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                                     <span>{product.stock}</span>
-                                    <AddToCart productID={productID} />
+                                    <AddToCart productID={product.productID} />
                                 </div>
                             </td>
                         </tr>

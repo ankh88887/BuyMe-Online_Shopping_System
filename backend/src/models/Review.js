@@ -28,6 +28,6 @@ reviewSchema.methods.getRate = function(){
     return this.rate;
 };
 
-const Review = mongoose.model('Rewiew', reviewSchema);
+const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;
