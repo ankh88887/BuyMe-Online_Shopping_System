@@ -19,7 +19,7 @@ export default function Search() {
                 throw new Error("Product not found")
             }
             const productData = await response.json()
-            console.log("Product data fetched:",productData)
+            console.log("Product data fetched:", productData)
             setProduct(productData.products)
             setFilteredProduct(productData.products)
         } catch (error) {
@@ -88,8 +88,11 @@ export default function Search() {
                     </h2>
 
                     <div className={style.scrollContainer}>
-                        {filteredProduct.map((productItem) => (
-                            <SearchProductCell key={productItem.id} productJSON={productItem} />
+                        {filteredProduct.map((productItem, index) => (
+                            <SearchProductCell
+                                key={productItem.id || index} // Use productItem.id if available, otherwise fallback to index
+                                productJSON={productItem}
+                            />
                         ))}
                     </div>
                 </div>

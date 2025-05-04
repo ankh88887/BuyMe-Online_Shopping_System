@@ -15,7 +15,7 @@ export default function SearchProductCell({ productJSON }) {
 
     return (
         <div className={styles.productCell}>
-            <Link to={'/product/' + product.id}>
+            <Link to={'/product/' + product.productID}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} className={styles.image} />
             </Link>
             <div className={styles.productContainer}>
