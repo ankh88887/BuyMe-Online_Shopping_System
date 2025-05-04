@@ -1,4 +1,4 @@
-.purchaseBackground {
+.historyBackground {
     background-color: #fdf9de;
     min-height: 100vh;
     padding: 20px;
@@ -7,7 +7,7 @@
     align-items: flex-start;
 }
 
-.purchaseContainer {
+.historyContainer {
     width: 100%;
     max-width: 800px;
     margin: 20px auto;
@@ -17,124 +17,115 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.purchaseHeader {
-    display: flex;
-    align-items: center;
+.historyHeader {
     margin-bottom: 30px;
-    background-color: #1c3455;
     padding: 15px 20px;
+    background-color: #1c3455;
     border-radius: 8px;
     color: white;
 }
 
-.purchaseHeader h1 {
+.historyHeader h1 {
     color: white;
     margin: 0;
     font-size: 28px;
 }
 
-.purchaseSection {
+.historySection {
     margin-bottom: 30px;
+}
+
+.orderBlock {
+    margin-bottom: 40px;
     padding-bottom: 20px;
     border-bottom: 1px solid #eee;
 }
 
-.purchaseSection h3 {
+.orderBlock h3 {
     color: #1c3455;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     font-size: 20px;
 }
 
-.orderGroup {
-    margin-bottom: 30px;
+.orderBlock p {
+    margin: 5px 0;
 }
 
-.orderGroup table {
+table {
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
-.orderGroup th,
-.orderGroup td {
+th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
-.orderGroup th {
+th {
     background-color: #1c3455;
     color: white;
     font-weight: bold;
 }
 
-.orderGroup tr:nth-child(even) {
+tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.orderGroup tr:hover {
+tr:hover {
     background-color: rgba(28, 52, 85, 0.1);
 }
 
-.orderGroup td {
-    background-color: #fff;
-}
-
-.formInput {
-    width: 100%;
-    padding: 10px;
+select,
+.commentInput {
+    padding: 5px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
 }
 
-.formInput:focus {
-    outline: none;
-    border-color: #1c3455;
+.commentInput {
+    width: 100%;
 }
 
-.btnSubmit {
+.submitButton {
     background-color: #1c3455;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.3s;
 }
 
-.btnSubmit:hover {
+.submitButton:hover {
     background-color: #142a47;
 }
 
-.btnSubmit:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
 @media (max-width: 768px) {
-    .purchaseBackground {
+    .historyBackground {
         padding: 10px;
     }
 
-    .purchaseContainer {
+    .historyContainer {
         padding: 20px;
     }
 
-    .orderGroup th,
-    .orderGroup td {
+    th, td {
         padding: 8px;
         font-size: 14px;
     }
 
-    .formInput {
-        padding: 8px;
+    select,
+    .commentInput {
+        padding: 4px;
         font-size: 14px;
     }
 
-    .btnSubmit {
-        padding: 8px 16px;
+    .submitButton {
+        padding: 4px 8px;
         font-size: 14px;
     }
 }

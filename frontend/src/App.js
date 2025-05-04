@@ -49,7 +49,7 @@ function App() {
             <Route path="/search" element={<Search />}>
               <Route path=":id" element={<Search />} />
             </Route>
-
+            <Route path="/payment" element={<Payment />} />
               <Route path="*" element={<p>404 not found</p>} />
             </Routes >
           </div>

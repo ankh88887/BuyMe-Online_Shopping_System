@@ -1,36 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import NavBar from './NavBar';
 import styles from './Payment.module.css';
 
+// Set the base URL for API calls
+const API_BASE_URL = 'http://localhost:5005';
+
 const PaymentPage = () => {
-    //Test case
     const [personalInfo, setPersonalInfo] = useState({
-        username: 'JohnDoe',
-        address: '123 Main St, City, Country',
-        email: 'john.doe@example.com',
-        phone: '123-456-7890',
+        userName: '',
+        address: '',
+        email: '',
+        phone: '',
     });
     const [cardInfo, setCardInfo] = useState({
-        cardHolderName: 'John Doe',
-        cardId: '3872 2378 2331 4242',
-        expiryMonth: '04',
-        expiryYear: '25',
-        cvv: '888',
-        isEditable: true, 
+        CardOwner: '',
+        CDNo: '',
+        expiryDate: '',
+        CVV: '',
+        isEditable: true,
     });
     const [editPersonalMode, setEditPersonalMode] = useState(false);
     const [editCardMode, setEditCardMode] = useState(false);
     const [tempPersonalInfo, setTempPersonalInfo] = useState({ ...personalInfo });
     const [tempCardInfo, setTempCardInfo] = useState({ ...cardInfo });
     const location = useLocation();
-    const totalCost = location.state?.totalCost || '1500.00'; // Fallback to demo value if not passed
+    const navigate = useNavigate();
+    const totalCost = location.state?.totalCost || '1500.00';
+    const items = location.state?.items || new Map();
+
+    const userID = localStorage.getItem('userID') || 'user123';
 
     useEffect(() => {
-        //demo
-        setTempPersonalInfo({ ...personalInfo });
-        setTempCardInfo({ ...cardInfo });
-    }, []);
+        const fetchUserInfo = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/users/${userID}`);
+                const user = response.data;
+                setPersonalInfo({
+                    userName: user.userName,
+                    address: user.address || '',
+                    email: user.email,
+                    phone: '',
+                });
+                setTempPersonalInfo({
+                    userName: user.userName,
+                    address: user.address || '',
+                    email: user.email,
+                    phone: '',
+                });
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        };
+
+        const fetchPaymentInfo = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/payments/${userID}`);
+                const payment = response.data;
+                setCardInfo({
+                    CardOwner: payment.CardOwner,
+                    CDNo: payment.CDNo.toString(),
+                    expiryDate: payment.expiryDate,
+                    CVV: payment.CVV.toString(),
+                    isEditable: true,
+                });
+                setTempCardInfo({
+                    CardOwner: payment.CardOwner,
+                    CDNo: payment.CDNo.toString(),
+                    expiryDate: payment.expiryDate,
+                    CVV: payment.CVV.toString(),
+                    isEditable: true,
+                });
+            } catch (error) {
+                console.error('Error fetching payment info:', error);
+            }
+        };
+
+        fetchUserInfo();
+        fetchPaymentInfo();
+    }, [userID]);
 
     const handlePersonalInputChange = (e) => {
         const { name, value } = e.target;
@@ -39,30 +88,23 @@ const PaymentPage = () => {
 
     const handleCardInputChange = (e) => {
         const { name, value } = e.target;
-        let formattedValue = value;
-
-        if (name === 'cardHolderName') {
-           
-        } else if (name === 'cardId') {
-            const digits = value.replace(/\D/g, '');
-            const formatted = digits
-                .match(/.{1,4}/g)
-                ?.join(' ')
-                .substring(0, 19) || digits;
-            formattedValue = formatted;
-        } else if (name === 'cvv') {
-            // CVV should be 3-4 digits
-            if (value.length > 4 || !/^\d*$/.test(value)) {
-                return; 
-            }
-        }
-
-        setTempCardInfo(prev => ({ ...prev, [name]: formattedValue }));
+        setTempCardInfo(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSavePersonalChanges = () => {
-        setPersonalInfo({ ...tempPersonalInfo });
-        setEditPersonalMode(false);
+    const handleSavePersonalChanges = async () => {
+        try {
+            const response = await axios.put(`${API_BASE_URL}/users/${userID}`, {
+                userName: tempPersonalInfo.userName,
+                email: tempPersonalInfo.email,
+                address: tempPersonalInfo.address,
+                phone: tempPersonalInfo.phone,
+            });
+            setPersonalInfo({ ...tempPersonalInfo });
+            setEditPersonalMode(false);
+        } catch (error) {
+            console.error('Error updating user info:', error);
+            alert('Failed to update personal information');
+        }
     };
 
     const handleCancelPersonalEdit = () => {
@@ -70,23 +112,40 @@ const PaymentPage = () => {
         setEditPersonalMode(false);
     };
 
-    const handleSaveCardChanges = () => {
-        // Validation
-        if (!tempCardInfo.cardHolderName) {
+    const handleSaveCardChanges = async () => {
+        if (!tempCardInfo.CardOwner) {
             alert('Card holder name is required');
             return;
         }
-        if (!/^\d{4} \d{4} \d{4} \d{4}$/.test(tempCardInfo.cardId)) {
+        if (!/^\d{4} \d{4} \d{4} \d{4}$/.test(tempCardInfo.CDNo)) {
             alert('Card ID must be 16 digits in the format XXXX XXXX XXXX XXXX');
             return;
         }
-        if (!tempCardInfo.cvv || !/^\d{3,4}$/.test(tempCardInfo.cvv)) {
+        const [month, year] = tempCardInfo.expiryDate.split('/');
+        const monthNum = parseInt(month, 10);
+        const yearNum = parseInt(year, 10);
+        if (!month || !year || monthNum < 1 || monthNum > 12 || yearNum < 0 || yearNum > 99) {
+            alert('Expiry date must be valid (MM/YY, month 01-12, year 00-99)');
+            return;
+        }
+        if (!tempCardInfo.CVV || !/^\d{3,4}$/.test(tempCardInfo.CVV)) {
             alert('CVV must be 3 or 4 digits');
             return;
         }
 
-        setCardInfo({ ...tempCardInfo });
-        setEditCardMode(false);
+        try {
+            const response = await axios.put(`${API_BASE_URL}/payments/${userID}`, {
+                CDNo: tempCardInfo.CDNo.replace(/\s/g, ''),
+                expiryDate: tempCardInfo.expiryDate,
+                CVV: tempCardInfo.CVV,
+                CardOwner: tempCardInfo.CardOwner,
+            });
+            setCardInfo({ ...tempCardInfo });
+            setEditCardMode(false);
+        } catch (error) {
+            console.error('Error updating payment info:', error);
+            alert('Failed to update payment information');
+        }
     };
 
     const handleCancelCardEdit = () => {
@@ -100,9 +159,31 @@ const PaymentPage = () => {
         }
     };
 
-    const handleConfirmPayment = () => {
-        console.log('Payment confirmed with:', { personalInfo, cardInfo, totalCost });
-        //simulate confirm
+    const handleConfirmPayment = async () => {
+        try {
+            const cartID = `cart_${Date.now()}`;
+            await axios.post(`${API_BASE_URL}/carts`, {
+                CartID: cartID,
+                userID: userID,
+                items: Object.fromEntries(items),
+                totalCost: parseFloat(totalCost),
+            });
+
+            // Create a new empty cart to clear the current one
+            const newCartID = `cart_${Date.now() + 1}`;
+            await axios.post(`${API_BASE_URL}/carts`, {
+                CartID: newCartID,
+                userID: userID,
+                items: {},
+                totalCost: 0,
+            });
+
+            alert('Payment confirmed successfully!');
+            navigate('/history');
+        } catch (error) {
+            console.error('Error confirming payment:', error);
+            alert('Failed to confirm payment');
+        }
     };
 
     return (
@@ -121,15 +202,15 @@ const PaymentPage = () => {
                                 {editPersonalMode ? (
                                     <input
                                         type="text"
-                                        name="username"
-                                        value={tempPersonalInfo.username}
+                                        name="userName"
+                                        value={tempPersonalInfo.userName}
                                         onChange={handlePersonalInputChange}
                                         className={styles.formInput}
                                     />
                                 ) : (
                                     <input
                                         type="text"
-                                        value={personalInfo.username}
+                                        value={personalInfo.userName}
                                         className={styles.formInput}
                                         readOnly
                                     />
@@ -212,15 +293,15 @@ const PaymentPage = () => {
                                 {editCardMode ? (
                                     <input
                                         type="text"
-                                        name="cardHolderName"
-                                        value={tempCardInfo.cardHolderName}
+                                        name="CardOwner"
+                                        value={tempCardInfo.CardOwner}
                                         onChange={handleCardInputChange}
                                         className={styles.formInput}
                                     />
                                 ) : (
                                     <input
                                         type="text"
-                                        value={cardInfo.cardHolderName}
+                                        value={cardInfo.CardOwner}
                                         className={styles.formInput}
                                         readOnly
                                     />
@@ -233,8 +314,8 @@ const PaymentPage = () => {
                                 {editCardMode ? (
                                     <input
                                         type="text"
-                                        name="cardId"
-                                        value={tempCardInfo.cardId}
+                                        name="CDNo"
+                                        value={tempCardInfo.CDNo}
                                         onChange={handleCardInputChange}
                                         className={styles.formInput}
                                         placeholder="XXXX XXXX XXXX XXXX"
@@ -242,7 +323,7 @@ const PaymentPage = () => {
                                 ) : (
                                     <input
                                         type="text"
-                                        value={cardInfo.cardId}
+                                        value={cardInfo.CDNo}
                                         className={styles.formInput}
                                         readOnly
                                     />
@@ -253,19 +334,24 @@ const PaymentPage = () => {
                             <div className={styles.formGroup}>
                                 <label>Expiry date</label>
                                 <div className={styles.expiryGroup}>
-                                    <input
-                                        type="text"
-                                        value={cardInfo.expiryMonth} 
-                                        className={styles.formInputSmall}
-                                        readOnly
-                                    />
-                                    <span>/</span>
-                                    <input
-                                        type="text"
-                                        value={cardInfo.expiryYear} 
-                                        className={styles.formInputSmall}
-                                        readOnly
-                                    />
+                                    {editCardMode ? (
+                                        <input
+                                            type="text"
+                                            name="expiryDate"
+                                            value={tempCardInfo.expiryDate}
+                                            onChange={handleCardInputChange}
+                                            className={styles.formInput}
+                                            placeholder="MM/YY"
+                                            maxLength="5"
+                                        />
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={cardInfo.expiryDate}
+                                            className={styles.formInput}
+                                            readOnly
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
@@ -273,8 +359,8 @@ const PaymentPage = () => {
                                 {editCardMode ? (
                                     <input
                                         type="text"
-                                        name="cvv"
-                                        value={tempCardInfo.cvv}
+                                        name="CVV"
+                                        value={tempCardInfo.CVV}
                                         onChange={handleCardInputChange}
                                         className={styles.formInput}
                                         placeholder="CVV"
@@ -283,7 +369,7 @@ const PaymentPage = () => {
                                 ) : (
                                     <input
                                         type="text"
-                                        value={cardInfo.cvv}
+                                        value={cardInfo.CVV}
                                         className={styles.formInput}
                                         readOnly
                                     />
