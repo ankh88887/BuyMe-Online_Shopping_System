@@ -6,7 +6,7 @@ export default function ProductCell({ productID }) {
     const [product, setProduct] = useState(null)
     const fetchProduct = async (productID) => {
         try {
-            const response = await fetch(`http://localhost:5005/api/product/${productID}`) // Backend API
+            const response = await fetch(`http://localhost:5005/api/products/${productID}`) // Backend API
             if (!response.ok) {
                 throw new Error('Product not found')
             }
@@ -26,12 +26,13 @@ export default function ProductCell({ productID }) {
     }
     return (
         <div className={styles.productCell}>
-            <Link to={'/product/' + product.id}>
-                <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} className={styles.image} />
+            <Link to={'/product/' + product.productID}>
+                <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} className={styles.image} />
             </Link>
             <div className={styles.productDetailContainer}>
-                <h2 className={styles.productName}>{product.name}</h2>
-                <p className={styles.productPrice}>${product.price}</p>
+                <h2 className={styles.productName}>{product.productName}</h2>
+                <p className={styles.productDetail}>${product.price}</p>
+                <p className={styles.productDetail}>{product.description}</p>
             </div>
         </div>
     )

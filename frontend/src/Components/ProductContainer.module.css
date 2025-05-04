@@ -41,14 +41,3 @@ td, th {
     text-align: start;
     font-size: 30px;
 }
-
-@media (max-width: 1500px) {
-    .contentContainer {
-        flex-direction: column; /* Stack image and table vertically if space is limited */
-        align-items: center;
-    }
-
-    .productImage {
-        left: 0; /* Reset the position when stacked */
-    }
-}

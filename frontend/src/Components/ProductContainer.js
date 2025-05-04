@@ -6,7 +6,7 @@ export default function ProductContainer({ productID }) {
     const [product, setProduct] = useState(null)
     const fetchProduct = async (productID) => {
         try {
-            const response = await fetch(`http://localhost:5005/api/product/${productID}`) // Backend API
+            const response = await fetch(`http://localhost:5005/api/products/${productID}`) // Backend API
             if (!response.ok) {
                 throw new Error('Product not found')
             }
@@ -29,7 +29,7 @@ export default function ProductContainer({ productID }) {
         <div className={styles.productContainer}>
             <p className={styles.productName}>{product.name}</p>
             <div className={styles.productDetails}>
-                <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} />
+                <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} />
                 <table>
                     <tbody>
                         <tr height="70px">
@@ -40,7 +40,7 @@ export default function ProductContainer({ productID }) {
                             <td>Stock:</td>
                             <td>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                                    <span>Not in stock</span>
+                                    <span>{product.stock}</span>
                                     <AddToCart productID={productID} />
                                 </div>
                             </td>
