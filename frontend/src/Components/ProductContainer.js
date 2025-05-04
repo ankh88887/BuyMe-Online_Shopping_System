@@ -27,14 +27,14 @@ export default function ProductContainer({ productID }) {
 
     return (
         <div className={styles.productContainer}>
-            <p className={styles.productName}>{product.name}</p>
+            <p className={styles.productName}>{product.productName}</p>
             <div className={styles.productDetails}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} />
                 <table>
                     <tbody>
                         <tr height="70px">
                             <td width="200px">Price:</td>
-                            <td>${product.price}</td>
+                            <td >${product.price}</td>
                         </tr>
                         <tr height="70px">
                             <td>Stock:</td>

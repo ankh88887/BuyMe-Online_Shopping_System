@@ -14,14 +14,14 @@ export default function Search() {
     const fetchProduct = async (productKeywords) => {
         try {
             console.log("Fetching products with keywords:", productKeywords);
-            const response = await fetch(`http://localhost:5005/api/product/search/${productKeywords}`);
+            const response = await fetch(`http://localhost:5005/api/products/search/${productKeywords}`);
             if (!response.ok) {
                 throw new Error("Product not found");
             }
             const productData = await response.json();
-            console.log("Product data fetched:", productData);
-            setProduct(productData);
-            setFilteredProduct(productData);
+            console.log("Product data fetched:",productData);
+            setProduct(productData.products);
+            setFilteredProduct(productData.products);
         } catch (error) {
             console.error("Error fetching product:", error);
             setProduct([]); // Set to empty array if no product found
@@ -68,6 +68,8 @@ export default function Search() {
                             max={maxPriceLimit}
                             value={minPriceLimit}
                             onChange={handleMinPriceLimit}
+                            style={{ width: "120px" }}
+                            key="minPriceLimit"
                         />
                         ~
                         <input
@@ -77,6 +79,8 @@ export default function Search() {
                             min={minPriceLimit}
                             value={maxPriceLimit}
                             onChange={handleMaxPriceLimit}
+                            style={{ width: "120px" }}
+                            key="maxPriceLimit"
                         />
                         <button className={style.FilterButton} onClick={filterProduct}>
                             Confirm

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './SearchProductCell.module.css';
+import AddToCart from './UpdateCartBtn'
 
 export default function SearchProductCell({ productJSON }) {
     const [product, setProduct] = useState(null)
@@ -11,17 +12,19 @@ export default function SearchProductCell({ productJSON }) {
     if (!product) {
         return <p>Loading...</p> // Show loading message while fetching
     }
+
     return (
         <div className={styles.productCell}>
             <Link to={'/product/' + product.id}>
-                <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} className={styles.image} />
+                <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} className={styles.image} />
             </Link>
             <div className={styles.productContainer}>
                 <div className={styles.productDetailContainer}>
-                    <h2 className={styles.productName}>{product.name}</h2>
-                    <p className={styles.productPrice}>${product.price}</p>
+                        <h2 className={styles.productName}>{product.productName} ${product.price} </h2>
+                        <p className={styles.productDetail}>Rate: {product.rateCount !== 0 ? product.totalRate / product.rateCount : "no comment yet"}</p>
+                        <p className={styles.productDetail}>{product.description}</p>
                 </div>
-                <button className={styles.addToCartButton}>Add to Cart</button>
+                <AddToCart productID={product.productID} />
             </div>
         </div>
     )

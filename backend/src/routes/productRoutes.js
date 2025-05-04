@@ -1,13 +1,14 @@
 const express = require('express');
-const Product = require('../models/Product');
 const router = express.Router();
 
 const {
   getProducts,
-  getProductById
+  getProductById,
+  getProductsByKeyword
 } = require('../controllers/productController');
 
 router.get('/', getProducts);
 router.get('/:id', getProductById);
+router.get('/search/:keyword', getProductsByKeyword);
 
 module.exports = router;
