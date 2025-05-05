@@ -8,25 +8,7 @@ const reviewSchema = new mongoose.Schema({
     rate: { type: Number, required: true },
 });
 
-reviewSchema.methods.getReviewID = function () {
-    return this.reviewID;
-};
 
-reviewSchema.methods.getProductID = function () {
-    return this.ProductID;
-};
-
-reviewSchema.methods.getUserID = function () {
-    return this.userID;
-};
-
-reviewSchema.methods.getComment = function () {
-    return this.comment;
-};
-
-reviewSchema.methods.getRate = function () {
-    return this.rate;
-};
 
 const Review = mongoose.model('Review', reviewSchema);
 
