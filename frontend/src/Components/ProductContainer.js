@@ -30,7 +30,28 @@ export default function ProductContainer({ productID }) {
             <p className={styles.productName}>{product.name}</p>
             <div className={styles.productDetails}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.image} alt={product.name} />
-                <table>
+                {/* <table>
+                    <tbody>
+                        <tr height="70px">
+                            <td width="200px">Price:</td>
+                            <td>${product.price}</td>
+                        </tr>
+                        <tr height="70px">
+                            <td>Stock:</td>
+                            <td>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                                    <span>Not in stock</span>
+                                    <AddToCart productID={productID} />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style={{verticalAlign: "top"}}>
+                            <td>Description:</td>
+                            <td>{product.description}</td>
+                        </tr>
+                    </tbody>
+                </table> */}
+                <table className={styles.productTable}>
                     <tbody>
                         <tr height="70px">
                             <td width="200px">Price:</td>

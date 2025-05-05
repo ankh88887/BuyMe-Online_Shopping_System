@@ -20,7 +20,7 @@
     gap: 30px;
 }
 
-img {
+.productDetails img {
     width: 400px;
     height: 400px;
     object-fit: cover;
@@ -28,17 +28,17 @@ img {
     left: 0.1%;
 }
 
-table {
+.productTable {
     width: 1110px;
     height: 450px;
     border-collapse: collapse;
 }
 
-td, th {
+.productTable td, 
+.productTable th {
     border: 3px solid black;
     padding: 10px;
     text-align: left;
-    text-align: start;
     font-size: 30px;
 }
 

@@ -140,34 +140,55 @@ const AdminPage = () => {
             showAlert("Please enter a price.", "error");
             return;
         }
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
-                body: JSON.stringify({
-                    productID: formData.productID,
-                    productName: formData.productName,
-                    price: formData.price,
-                    stock: formData.stock,
-                    description: formData.description,
-                }),
-            });
-            const data = await response.json();
-            if (data._id) {
-                handleReset();
-                showAlert(`Product [${formData.productName}] created successfully!`, "success");
-            } else {
-                showAlert(data.message || "Failed to create product.", "error");
-            }
-        } catch (error) {
-            console.error("Error creating product:", error);
-            showAlert("Failed to create product.", "error");
+        // try {
+        //     const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             Authorization: "Bearer " + localStorage.getItem("token"),
+        //         },
+        //         body: JSON.stringify({
+        //             productID: formData.productID,
+        //             productName: formData.productName,
+        //             price: formData.price,
+        //             stock: formData.stock,
+        //             description: formData.description,
+        //         }),
+        //     });
+        //     const data = await response.json();
+        //     if (data._id) {
+        //         handleReset();
+        //         showAlert(`Product [${formData.productName}] created successfully!`, "success");
+        //     } else {
+        //         showAlert("Failed to create product21.", "error"); //data.message || 
+        //     }
+        // } catch (error) {
+        //     console.error("Error creating product:", error);
+        //     showAlert("Failed to create product.", "error");
+        // }
+
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+            body: JSON.stringify({
+                productID: formData.productID,
+                productName: formData.productName,
+                price: formData.price,
+                stock: formData.stock,
+                description: formData.description,
+            }),
+        });
+        const data = await response.json();
+        if (data._id) {
+            handleReset();
+            showAlert(`Product [${formData.productName}] created successfully!`, "success");
+        } else {
+            showAlert("Failed to create product.", "error"); //data.message || 
         }
     };
-    
 
     const handleCreateUser = async () => {
         if (!formData.password) {
@@ -478,12 +499,12 @@ const AdminPage = () => {
         const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
         return (
-            <div className="user-group">
+            <div className="product-group">
                 <h3>Product List</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Product ID</th>
+                            <th>ID</th>
                             <th>Product name</th>
                             <th>Price</th>
                             <th>Stock</th>
