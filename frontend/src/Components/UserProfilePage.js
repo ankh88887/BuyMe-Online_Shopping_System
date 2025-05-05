@@ -195,7 +195,7 @@ const UserProfile = () => {
             </div>
           </div>
 
-          <div className="form-row">
+          <div className="form-row-1">
             <div className="form-group">
               <label>Expiry date</label>
               {editMode ? (

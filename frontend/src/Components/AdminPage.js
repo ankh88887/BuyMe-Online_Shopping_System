@@ -10,7 +10,17 @@ const AdminPage = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showUserForm, setShowUserForm] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        productId: "",
+        name: "",
+        price: "",
+        stock: "",
+        description: "",
+        userName: "",
+        password: "",
+        email: "",
+        isAdmin: false,
+    });
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage] = useState(5);
     const [productsPerPage] = useState(5);
@@ -32,7 +42,7 @@ const AdminPage = () => {
             price: "",
             stock: "",
             description: "",
-            username: "",
+            userName: "",
             password: "",
             email: "",
             isAdmin: false,
@@ -43,7 +53,7 @@ const AdminPage = () => {
         setShowUserForm(false);
         setShowProductForm(false);
     }, []);
-
+    
     useEffect(() => {
         if (activeTab === "modifyUser") {
             fetchUsers();
@@ -59,21 +69,13 @@ const AdminPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/`, {
                 method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
+                // headers: {
+                //     "Content-Type": "application/json",
+                //     Authorization: "Bearer " + localStorage.getItem("token"),
+                // },
             });
             const data = await response.json();
-            if (data.success) {
-                const combinedUsers = data.user.map((user) => ({
-                    _id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    isAdmin: user.isAdmin,
-                }));
-                setUsers(combinedUsers);
-            }
+            setUsers(data); // Modified to directly use the API response
         } catch (error) {
             console.error("Error fetching users:", error);
         }
@@ -101,15 +103,13 @@ const AdminPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${userId}`, {
                 method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
+                // headers: {
+                //     "Content-Type": "application/json",
+                //     Authorization: "Bearer " + localStorage.getItem("token"),
+                // },
             });
             const data = await response.json();
-            if (data.success) {
-                return data.user;
-            }
+            return data; // Modified to directly return the API response
         } catch (error) {
             console.error("Error fetching user details:", error);
         }
@@ -177,7 +177,7 @@ const AdminPage = () => {
             showAlert("Please enter a password.", "error");
             return;
         }
-        if (!formData.username) {
+        if (!formData.userName) {
             showAlert("Please enter a username.", "error");
             return;
         }
@@ -188,40 +188,24 @@ const AdminPage = () => {
                 Authorization: "Bearer " + localStorage.getItem("token"),
             },
             body: JSON.stringify({
-                username: formData.username,
+                userName: formData.userName,
                 password: formData.password,
                 email: formData.email,
                 isAdmin: formData.isAdmin,
             }),
         });
         const data = await response.json();
-        if (data.success) {
+        if (data._id) { // Modified to check for _id in response
             handleReset();
             if (formData.isAdmin) {
-                showAlert(`Admin [${formData.username}] created successfully!`, "success");
+                showAlert(`Admin [${formData.userName}] created successfully!`, "success");
             } else {
-                showAlert(`User [${formData.username}] created successfully!`, "success");
+                showAlert(`User [${formData.userName}] created successfully!`, "success");
             }
         } else {
             showAlert("Username has been taken already.", "error");
         }
     };
-
-    /*const handleInputChange = (e) => {
-        let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-        
-        // For number fields, ensure they don't go below 0
-        if ((e.target.name === "price" || e.target.name === "stock") && e.target.type === "number") {
-            const numValue = parseFloat(value);
-            if (isNaN(numValue) || numValue < 0) {
-                value = 0;
-            } else {
-                value = numValue;
-            }
-        }
-
-        setFormData({ ...formData, [e.target.name]: value });
-    };*/
 
     const handleInputChange = (e) => {
         let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -243,19 +227,25 @@ const AdminPage = () => {
             }
         }
         
-        setFormData({ ...formData, [e.target.name]: value });
+        // Map input name to state property if needed
+        let stateProp = e.target.name;
+        if (e.target.name === "username") {
+            stateProp = "userName";
+        }
+        
+        setFormData({ ...formData, [stateProp]: value });
     };
 
     const handleManageUser = async (user) => {
-        const userDetails = await fetchUserDetails(user._id);
+        const userDetails = await fetchUserDetails(user.userID); // Changed from _Id to userID
         if (userDetails) {
             setSelectedUser(userDetails);
             setFormData({
                 ...formData,
-                username: userDetails.username,
+                userName: userDetails.userName || "",
                 password: "",
-                email: userDetails.email,
-                isAdmin: userDetails.isAdmin,
+                email: userDetails.email || "",
+                isAdmin: !!userDetails.isAdmin,
             });
             setShowUserForm(true);
         }
@@ -267,11 +257,11 @@ const AdminPage = () => {
             setSelectedProduct(productDetails);
             setFormData({
                 ...formData,
-                productId: productDetails.productId,
-                name: productDetails.name,
-                price: productDetails.price,
-                stock: productDetails.stock,
-                description: productDetails.description,
+                productId: productDetails.productId || "",
+                name: productDetails.name || "",
+                price: productDetails.price || "",
+                stock: productDetails.stock || "",
+                description: productDetails.description || "",
             });
             setShowProductForm(true);
         }
@@ -280,36 +270,36 @@ const AdminPage = () => {
     const handleUpdateUser = async () => {
         try {
             const previousIsAdmin = selectedUser.isAdmin;
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser._id}`, {
-                method: "POST",
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, { // Changed from _Id to userID
+                method: "PUT", // Changed from POST to PUT to match API
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
                 body: JSON.stringify({
-                    username: formData.username,
+                    userName: formData.userName,
                     password: formData.password,
                     email: formData.email,
                     isAdmin: formData.isAdmin,
                 }),
             });
             const data = await response.json();
-            if (data.success) {
+            if (data._id) { // Changed from success to _id check
                 console.log("User updated successfully");
                 setShowUserForm(false);
                 fetchUsers();
                 handleReset();
                 if (previousIsAdmin === formData.isAdmin) {
                     if (formData.isAdmin) {
-                        showAlert(`Admin [${formData.username}] updated successfully!`, "success");
+                        showAlert(`Admin [${formData.userName}] updated successfully!`, "success");
                     } else {
-                        showAlert(`User [${formData.username}] updated successfully!`, "success");
+                        showAlert(`User [${formData.userName}] updated successfully!`, "success");
                     }
                 } else {
                     if (formData.isAdmin) {
-                        showAlert(`[${formData.username}] has been updated to an Admin!`, "success");
+                        showAlert(`[${formData.userName}] has been updated to an Admin!`, "success");
                     } else {
-                        showAlert(`[${formData.username}] has been updated to an User!`, "success");
+                        showAlert(`[${formData.userName}] has been updated to an User!`, "success");
                     }
                 }
             } else {
@@ -353,20 +343,23 @@ const AdminPage = () => {
 
     const handleDeleteUser = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser._id}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, { // Changed from _Id to userID
                 method: "DELETE",
-                headers: { Authorization: "Bearer " + localStorage.getItem("token") },
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token") 
+                },
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.message === "User deleted successfully") { // Changed to match API response
                 console.log("User deleted successfully");
                 setShowUserForm(false);
                 fetchUsers();
                 handleReset();
                 if (selectedUser.isAdmin) {
-                    showAlert(`Admin [${formData.username}] deleted successfully!`, "success");
+                    showAlert(`Admin [${formData.userName}] deleted successfully!`, "success");
                 } else {
-                    showAlert(`User [${formData.username}] deleted successfully!`, "success");
+                    showAlert(`User [${formData.userName}] deleted successfully!`, "success");
                 }
             } else {
                 showAlert("Failed to delete user.", "error");
@@ -424,7 +417,6 @@ const AdminPage = () => {
         for (let i = 1; i <= totalPages; i++) {
             pageNumbers.push(i);
         }
-
         return (
             <div className="pagination">
                 <button className="pagination-arrow" onClick={() => currentPage > 1 && paginate(currentPage - 1)} disabled={currentPage === 1}>
@@ -463,8 +455,8 @@ const AdminPage = () => {
                     </thead>
                     <tbody>
                         {currentUsers.map((user) => (
-                            <tr key={user._id}>
-                                <td>{user.username}</td>
+                            <tr key={user._id || user.userID}>
+                                <td>{user.userName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.isAdmin ? "Admin" : "Regular User"}</td>
                                 <td>
@@ -494,6 +486,7 @@ const AdminPage = () => {
                             <th>Product name</th>
                             <th>Price</th>
                             <th>Stock</th>
+                            <th>Description</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -503,8 +496,8 @@ const AdminPage = () => {
                                 <td>{product.productId}</td>
                                 <td>{product.name}</td>
                                 <td>${product.price}</td>
-                                <td>${product.stock}</td>
-                                <td>${product.description}</td>
+                                <td>{product.stock}</td>
+                                <td>{product.description}</td>
                                 <td>
                                     <button onClick={() => handleManageProduct(product)}>Manage</button>
                                 </td>
@@ -557,47 +550,47 @@ const AdminPage = () => {
                     <form onSubmit={handleSubmit}>
                         {activeTab === "newProduct" && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId} onChange={handleInputChange} required />
+                                    <input type="text" name="productId" value={formData.productId || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+                                    <input type="text" name="name" value={formData.name || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Price:</label>
-                                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} min="0" step="0.1" required />
+                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} min="0" step="0.1" required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Stock:</label>
-                                    <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} min="0" step="1" required />
+                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} min="0" step="1" required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Description:</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange}></textarea>
+                                    <textarea name="description" value={formData.description || ""} onChange={handleInputChange}></textarea>
                                 </div>
                             </div>
                         )}
                         
                         {activeTab === "createUser" && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Username:</label>
-                                    <input type="text" name="username" value={formData.username} onChange={handleInputChange} />
+                                    <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Please input the password" />
+                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Email:</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Please input the email" />
+                                    <input type="email" name="email" value={formData.email || ""} onChange={handleInputChange} placeholder="Please input the email" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <span>Is Admin</span>
                                     <label className="switch">
-                                        <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleInputChange} />
+                                        <input type="checkbox" name="isAdmin" checked={!!formData.isAdmin} onChange={handleInputChange} />
                                         <span className="slider round"></span>
                                     </label>
                                 </div>
@@ -606,22 +599,22 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyUser" && showUserForm && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Username:</label>
-                                    <input type="text" name="username" value={formData.username} onChange={handleInputChange} />
+                                    <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Please input the password" />
+                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Email:</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Please input the email" />
+                                    <input type="email" name="email" value={formData.email || ""} onChange={handleInputChange} placeholder="Please input the email" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <span>Is Admin</span>
                                     <label className="switch">
-                                        <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleInputChange} />
+                                        <input type="checkbox" name="isAdmin" checked={!!formData.isAdmin} onChange={handleInputChange} />
                                         <span className="slider round"></span>
                                     </label>
                                 </div>
@@ -630,25 +623,25 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyProduct" && showProductForm && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId} onChange={handleInputChange} required />
+                                    <input type="text" name="productId" value={formData.productId || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+                                    <input type="text" name="name" value={formData.name || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Price:</label>
-                                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} required />
+                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Stock:</label>
-                                    <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} required />
+                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Description:</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange}></textarea>
+                                    <textarea name="description" value={formData.description || ""} onChange={handleInputChange}></textarea>
                                 </div>
                             </div>
                         )}
