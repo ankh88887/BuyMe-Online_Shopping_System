@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
-const Event = require('../models/Product'); // Make sure you have this model created
+const Product = require('../models/Product'); // Fixed the import name
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
@@ -120,9 +120,19 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
-// ==================== EVENT MANAGEMENT ROUTES ====================
+// ==================== PRODUCT MANAGEMENT ROUTES ====================
 
-// Create a new event
+// Get all products
+router.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.send(products);
+  } catch (error) {
+    res.status(500).send({ message: 'Error retrieving products', error: error.message });
+  }
+});
+
+// Create a new product
 router.post('/products', async (req, res) => {
   try {
     const { productID, productName, price, stock, description } = req.body;
@@ -131,14 +141,13 @@ router.post('/products', async (req, res) => {
       return res.status(400).send({ message: 'Missing required fields' });
     }
     
-    const updatedAt = new Date();
-    
     const product = new Product({
       productID,
       productName,
       price,
       stock,
-      description
+      description,
+      //updatedAt: new Date()
     });
     
     await product.save();
@@ -148,49 +157,51 @@ router.post('/products', async (req, res) => {
   }
 });
 
-// Get events by ID
+// Get product by ID
 router.get('/products/:id', async (req, res) => {
   try {
-    const productId = req.params.id;
+    const productID = req.params.id;
     
-    if (!productId) {
+    if (!productID) {
       return res.status(400).send({ message: 'Missing required fields' });
     }
     
-    const products = await Product.find({ productId });
-    res.send(products);
-  } catch (error) {
-    res.status(500).send({ message: 'Failed to retrieve events', error: error.message });
-  }
-});
-
-// Update an event
-router.put('/products/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const { productID, productName, price, stock, description } = req.body;
-    
-    const product = await Event.findOne({ productId });
-    if (!products) {
+    const product = await Product.findOne({ productID });
+    if (!product) {
       return res.status(404).send({ message: 'Product not found' });
     }
     
-    const updatedAt = new Date();
+    res.send(product);
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to retrieve product', error: error.message });
+  }
+});
+
+// Update a product
+router.put('/products/:id', async (req, res) => {
+  try {
+    const productID = req.params.id;
+    const { productName, price, stock, description } = req.body;
+    
+    const product = await Product.findOne({ productID });
+    if (!product) {
+      return res.status(404).send({ message: 'Product not found' });
+    }
     
     if (productName) {
-        product.productName = productName;
+      product.productName = productName;
     }
     if (price) {
-        product.price = price;
+      product.price = price;
     }
     if (stock) {
-        product.stock = stock;
+      product.stock = stock;
     }
     if (description) {
-        product.description = description;
+      product.description = description;
     }
     
-    product.updatedAt = updatedAt;
+    product.updatedAt = new Date();
     
     await product.save();
     res.send(product);
@@ -199,16 +210,16 @@ router.put('/products/:id', async (req, res) => {
   }
 });
 
-// Delete an event
+// Delete a product
 router.delete('/products/:id', async (req, res) => {
   try {
-    const productId = req.params.id;
+    const productID = req.params.id;
     
-    if (!productId) {
+    if (!productID) {
       return res.status(400).send({ message: 'Missing required fields' });
     }
     
-    const product = await Event.findOneAndDelete({ productId });
+    const product = await Product.findOneAndDelete({ productID });
     if (!product) {
       return res.status(404).send({ message: 'Product not found' });
     }

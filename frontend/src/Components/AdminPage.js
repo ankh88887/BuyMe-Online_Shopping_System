@@ -11,8 +11,8 @@ const AdminPage = () => {
     const [showUserForm, setShowUserForm] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
     const [formData, setFormData] = useState({
-        productId: "",
-        name: "",
+        productID: "",
+        productName: "",
         price: "",
         stock: "",
         description: "",
@@ -37,8 +37,8 @@ const AdminPage = () => {
 
     const handleReset = useCallback(() => {
         const initialFormData = {
-            productId: "",
-            name: "",
+            productID: "",
+            productName: "",
             price: "",
             stock: "",
             description: "",
@@ -69,13 +69,13 @@ const AdminPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/`, {
                 method: "GET",
-                // headers: {
-                //     "Content-Type": "application/json",
-                //     Authorization: "Bearer " + localStorage.getItem("token"),
-                // },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
             });
             const data = await response.json();
-            setUsers(data); // Modified to directly use the API response
+            setUsers(data);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
@@ -91,9 +91,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                setProducts(data.products);
-            }
+            setProducts(data);
         } catch (error) {
             console.error("Error fetching products:", error);
         }
@@ -103,22 +101,22 @@ const AdminPage = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${userId}`, {
                 method: "GET",
-                // headers: {
-                //     "Content-Type": "application/json",
-                //     Authorization: "Bearer " + localStorage.getItem("token"),
-                // },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
             });
             const data = await response.json();
-            return data; // Modified to directly return the API response
+            return data;
         } catch (error) {
             console.error("Error fetching user details:", error);
         }
         return null;
     };
 
-    const fetchProductDetails = async (productId) => {
+    const fetchProductDetails = async (productID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${productId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${productID}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -126,9 +124,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                return data.product;
-            }
+            return data;
         } catch (error) {
             console.error("Error fetching product details:", error);
         }
@@ -136,7 +132,7 @@ const AdminPage = () => {
     };
 
     const handleCreateProduct = async () => {
-        if (!formData.name) {
+        if (!formData.productName) {
             showAlert("Please enter a product name.", "error");
             return;
         }
@@ -152,25 +148,26 @@ const AdminPage = () => {
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
                 body: JSON.stringify({
-                    productId: formData.productId,
-                    name: formData.name,
+                    productID: formData.productID,
+                    productName: formData.productName,
                     price: formData.price,
                     stock: formData.stock,
                     description: formData.description,
                 }),
             });
             const data = await response.json();
-            if (data.success) {
+            if (data._id) {
                 handleReset();
-                showAlert(`Product [${formData.name}] created successfully!`, "success");
+                showAlert(`Product [${formData.productName}] created successfully!`, "success");
             } else {
-                showAlert("The product has already existed.", "error");
+                showAlert(data.message || "Failed to create product.", "error");
             }
         } catch (error) {
             console.error("Error creating product:", error);
             showAlert("Failed to create product.", "error");
         }
     };
+    
 
     const handleCreateUser = async () => {
         if (!formData.password) {
@@ -195,7 +192,7 @@ const AdminPage = () => {
             }),
         });
         const data = await response.json();
-        if (data._id) { // Modified to check for _id in response
+        if (data._id) {
             handleReset();
             if (formData.isAdmin) {
                 showAlert(`Admin [${formData.userName}] created successfully!`, "success");
@@ -229,15 +226,17 @@ const AdminPage = () => {
         
         // Map input name to state property if needed
         let stateProp = e.target.name;
-        if (e.target.name === "username") {
+        if (e.target.name === "userName") {
             stateProp = "userName";
+        } else if (e.target.name === "productID") {
+            stateProp = "productID";
         }
         
         setFormData({ ...formData, [stateProp]: value });
     };
 
     const handleManageUser = async (user) => {
-        const userDetails = await fetchUserDetails(user.userID); // Changed from _Id to userID
+        const userDetails = await fetchUserDetails(user.userID);
         if (userDetails) {
             setSelectedUser(userDetails);
             setFormData({
@@ -252,13 +251,13 @@ const AdminPage = () => {
     };
 
     const handleManageProduct = async (product) => {
-        const productDetails = await fetchProductDetails(product._id);
+        const productDetails = await fetchProductDetails(product.productID);
         if (productDetails) {
             setSelectedProduct(productDetails);
             setFormData({
                 ...formData,
-                productId: productDetails.productId || "",
-                name: productDetails.name || "",
+                productID: productDetails.productID || "",
+                productName: productDetails.productName || "",
                 price: productDetails.price || "",
                 stock: productDetails.stock || "",
                 description: productDetails.description || "",
@@ -270,8 +269,8 @@ const AdminPage = () => {
     const handleUpdateUser = async () => {
         try {
             const previousIsAdmin = selectedUser.isAdmin;
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, { // Changed from _Id to userID
-                method: "PUT", // Changed from POST to PUT to match API
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -284,7 +283,7 @@ const AdminPage = () => {
                 }),
             });
             const data = await response.json();
-            if (data._id) { // Changed from success to _id check
+            if (data._id) {
                 console.log("User updated successfully");
                 setShowUserForm(false);
                 fetchUsers();
@@ -299,7 +298,7 @@ const AdminPage = () => {
                     if (formData.isAdmin) {
                         showAlert(`[${formData.userName}] has been updated to an Admin!`, "success");
                     } else {
-                        showAlert(`[${formData.userName}] has been updated to an User!`, "success");
+                        showAlert(`[${formData.userName}] has been updated to a User!`, "success");
                     }
                 }
             } else {
@@ -312,27 +311,26 @@ const AdminPage = () => {
 
     const handleUpdateProduct = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct._id}`, {
-                method: "POST",
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct.productID}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
                 body: JSON.stringify({
-                    productId: formData.productId,
-                    name: formData.name,
+                    productName: formData.productName,
                     price: formData.price,
                     stock: formData.stock,
                     description: formData.description,
                 }),
             });
             const data = await response.json();
-            if (data.success) {
+            if (data._id) {
                 console.log("Product updated successfully");
                 setShowProductForm(false);
                 fetchProducts();
                 handleReset();
-                showAlert(`Product [${formData.name}] updated successfully!`, "success");
+                showAlert(`Product [${formData.productName}] updated successfully!`, "success");
             } else {
                 showAlert("Failed to update product.", "error");
             }
@@ -343,7 +341,7 @@ const AdminPage = () => {
 
     const handleDeleteUser = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, { // Changed from _Id to userID
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, {
                 method: "DELETE",
                 headers: { 
                     "Content-Type": "application/json",
@@ -351,7 +349,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.message === "User deleted successfully") { // Changed to match API response
+            if (data.message === "User deleted successfully") {
                 console.log("User deleted successfully");
                 setShowUserForm(false);
                 fetchUsers();
@@ -371,17 +369,20 @@ const AdminPage = () => {
 
     const handleDeleteProduct = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct._id}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct.productID}`, {
                 method: "DELETE",
-                headers: { Authorization: "Bearer " + localStorage.getItem("token") },
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token") 
+                },
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.message === "Product deleted successfully") {
                 console.log("Product deleted successfully");
                 setShowProductForm(false);
                 fetchProducts();
                 handleReset();
-                showAlert(`Product [${formData.name}] deleted successfully!`, "success");
+                showAlert(`Product [${formData.productName}] deleted successfully!`, "success");
             } else {
                 showAlert("Failed to delete product.", "error");
             }
@@ -492,9 +493,9 @@ const AdminPage = () => {
                     </thead>
                     <tbody>
                         {currentProducts.map((product) => (
-                            <tr key={product._id}>
-                                <td>{product.productId}</td>
-                                <td>{product.name}</td>
+                            <tr key={product._id || product.productID}>
+                                <td>{product.productID}</td>
+                                <td>{product.productName}</td>
                                 <td>${product.price}</td>
                                 <td>{product.stock}</td>
                                 <td>{product.description}</td>
@@ -552,11 +553,11 @@ const AdminPage = () => {
                             <div className="form-content">
                                 <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId || ""} onChange={handleInputChange} required />
+                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} required />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name || ""} onChange={handleInputChange} required />
+                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Price:</label>
@@ -625,11 +626,11 @@ const AdminPage = () => {
                             <div className="form-content">
                                 <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId || ""} onChange={handleInputChange} required />
+                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} readOnly />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name || ""} onChange={handleInputChange} required />
+                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Price:</label>
@@ -667,11 +668,11 @@ const AdminPage = () => {
                                 </>
                             ) : (
                                 <button type="submit" className="btn-update">
-                                    {activeTab === "newProduct" ? "Create" : "Create"}
+                                    Create
                                 </button>
                             )}
                             <button type="button" className="btn-decline" onClick={handleReset}>
-                                Reset
+                                Reset / Return
                             </button>
                         </div>
                     </form>
