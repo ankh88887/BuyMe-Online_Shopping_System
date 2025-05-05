@@ -145,9 +145,9 @@ AdminRouter.get("/products", async (req, res) => {
 // @access  Private/Admin
 AdminRouter.post("/products", async (req, res) => {
     try {
-        const { productID, productName, price, stock, description } = req.body;
+        const {productName, price, stock, description } = req.body;
         
-        const product = await createProduct(productID, productName, price, stock, description);
+        const product = await createProduct(productName, price, stock, description);
         
         if (product) {
             res.status(201).json(product);

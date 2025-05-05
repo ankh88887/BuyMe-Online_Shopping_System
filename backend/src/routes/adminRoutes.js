@@ -38,27 +38,52 @@ router.post('/users', async (req, res) => {
     const { userName, password, email, isAdmin } = req.body;
     
     if (!userName || !password || !email || isAdmin === undefined) {
-      return res.status(400).send({ message: 'Username, password, email and isAdmin are required' });
+    return res.status(400).send({ message: 'Username, password, email and isAdmin are required' });
     }
+
+    // Check for existing username
+    const existingUser = await User.findOne({ userName });
+    if (existingUser) {
+    return res.status(400).send({ message: 'Username already exists' });
+    }
+
+    // Check for existing email
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+    return res.status(400).send({ message: 'Email already exists' });
+    }
+
+    // Get highest userID with numeric sorting
+    const highestUser = await User.findOne({})
+    .sort({ userID: -1 })
+    .collation({ locale: "en_US", numericOrdering: true });
     
-    const existing = await User.findOne({ userName });
-    if (existing) {
-      return res.status(400).send({ message: 'Username already exists' });
-    }
+    const nextUserID = highestUser ? parseInt(highestUser.userID) + 1 : 1;
     
     const saltedPassword = await bcrypt.hash(password, 10);
-    
+
     const user = new User({
-      userID: generateUserID(),
-      userName,
-      password: saltedPassword,
-      email,
-      isAdmin
+    userID: nextUserID.toString(),
+    userName,
+    password: saltedPassword,
+    email,
+    isAdmin
     });
-    
+
     await user.save();
     res.status(201).send(user);
   } catch (error) {
+    if (error.code === 11000) { // MongoDB duplicate key error
+    if (error.keyPattern.userID) {
+        return res.status(400).send({ message: 'User ID conflict. Try again.' });
+    }
+    if (error.keyPattern.userName) {
+        return res.status(400).send({ message: 'Username already exists' });
+    }
+    if (error.keyPattern.email) {
+        return res.status(400).send({ message: 'Email already exists' });
+    }
+    }
     res.status(500).send({ message: 'Error creating user', error: error.message });
   }
 });
@@ -70,17 +95,33 @@ router.put('/users/:id', async (req, res) => {
     
     const user = await User.findOne({ userID: req.params.id });
     if (!user) {
-      return res.status(404).send({ message: 'User not found' });
+    return res.status(404).send({ message: 'User not found' });
     }
-    
+      
+    // Check username uniqueness if changing
     if (userName && userName !== user.userName) {
-      const existingUser = await User.findOne({ userName });
-      if (existingUser) {
+    const existingUser = await User.findOne({ 
+        userName: userName,
+        _id: { $ne: user._id } // Exclude current user
+    });
+    if (existingUser) {
         return res.status(400).send({ message: 'Username already exists' });
-      }
-      user.userName = userName;
     }
-    
+    user.userName = userName;
+    }
+      
+    // Check email uniqueness if changing
+    if (email && email !== user.email) {
+    const existingEmail = await User.findOne({ 
+        email: email,
+        _id: { $ne: user._id } // Exclude current user
+    });
+    if (existingEmail) {
+        return res.status(400).send({ message: 'Email already exists' });
+    }
+    user.email = email;
+    }
+      
     if (password) {
       const saltedPassword = await bcrypt.hash(password, 10);
       user.password = saltedPassword;
@@ -135,24 +176,33 @@ router.get('/products', async (req, res) => {
 // Create a new product
 router.post('/products', async (req, res) => {
   try {
-    const { productID, productName, price, stock, description } = req.body;
+    const { productName, price, stock, description } = req.body;
     
-    if (!productID || !productName || !price || !stock || !description) {
-      return res.status(400).send({ message: 'Missing required fields' });
+    if (!productName || !price || !stock || !description) {
+    return res.status(400).send({ message: 'Missing required fields' });
     }
+
+    // Get highest productID with numeric sorting
+    const highestProduct = await Product.findOne({})
+    .sort({ productID: -1 })
+    .collation({ locale: "en_US", numericOrdering: true });
     
+    const nextProductID = highestProduct ? parseInt(highestProduct.productID) + 1 : 1;
+
     const product = new Product({
-      productID,
-      productName,
-      price,
-      stock,
-      description,
-      //updatedAt: new Date()
+    productID: nextProductID.toString(),
+    productName,
+    price,
+    stock,
+    description,
     });
-    
+
     await product.save();
     res.status(201).send(product);
   } catch (error) {
+    if (error.code === 11000) { // MongoDB duplicate key error
+    return res.status(400).send({ message: 'Product ID conflict. Try again.' });
+    }
     res.status(500).send({ message: 'Failed to create product', error: error.message });
   }
 });
@@ -229,10 +279,5 @@ router.delete('/products/:id', async (req, res) => {
     res.status(500).send({ message: 'Failed to delete product', error: error.message });
   }
 });
-
-// Helper function to generate a unique userID
-function generateUserID() {
-  return 'u' + Math.floor(1000 + Math.random() * 9000);
-}
 
 module.exports = router;

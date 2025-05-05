@@ -11,7 +11,7 @@ const AdminPage = () => {
     const [showUserForm, setShowUserForm] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
     const [formData, setFormData] = useState({
-        productID: "",
+        // productID: "",
         productName: "",
         price: "",
         stock: "",
@@ -37,7 +37,7 @@ const AdminPage = () => {
 
     const handleReset = useCallback(() => {
         const initialFormData = {
-            productID: "",
+            // productID: "",
             productName: "",
             price: "",
             stock: "",
@@ -140,33 +140,14 @@ const AdminPage = () => {
             showAlert("Please enter a price.", "error");
             return;
         }
-        // try {
-        //     const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             Authorization: "Bearer " + localStorage.getItem("token"),
-        //         },
-        //         body: JSON.stringify({
-        //             productID: formData.productID,
-        //             productName: formData.productName,
-        //             price: formData.price,
-        //             stock: formData.stock,
-        //             description: formData.description,
-        //         }),
-        //     });
-        //     const data = await response.json();
-        //     if (data._id) {
-        //         handleReset();
-        //         showAlert(`Product [${formData.productName}] created successfully!`, "success");
-        //     } else {
-        //         showAlert("Failed to create product21.", "error"); //data.message || 
-        //     }
-        // } catch (error) {
-        //     console.error("Error creating product:", error);
-        //     showAlert("Failed to create product.", "error");
-        // }
-
+        if (!formData.stock) {
+            showAlert("Please enter a stock.", "error");
+            return;
+        }
+        if (!formData.description) {
+            showAlert("Please enter a product description.", "error");
+            return;
+        }
         const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
             method: "POST",
             headers: {
@@ -174,7 +155,6 @@ const AdminPage = () => {
                 Authorization: "Bearer " + localStorage.getItem("token"),
             },
             body: JSON.stringify({
-                productID: formData.productID,
                 productName: formData.productName,
                 price: formData.price,
                 stock: formData.stock,
@@ -186,45 +166,65 @@ const AdminPage = () => {
             handleReset();
             showAlert(`Product [${formData.productName}] created successfully!`, "success");
         } else {
-            showAlert("Failed to create product.", "error"); //data.message || 
+            showAlert("Failed to create product.", "error");
         }
     };
 
     const handleCreateUser = async () => {
-        if (!formData.password) {
-            showAlert("Please enter a password.", "error");
-            return;
-        }
+        // Existing validation checks
         if (!formData.userName) {
             showAlert("Please enter a username.", "error");
             return;
         }
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("token"),
-            },
-            body: JSON.stringify({
-                userName: formData.userName,
-                password: formData.password,
-                email: formData.email,
-                isAdmin: formData.isAdmin,
-            }),
-        });
-        const data = await response.json();
-        if (data._id) {
-            handleReset();
-            if (formData.isAdmin) {
-                showAlert(`Admin [${formData.userName}] created successfully!`, "success");
-            } else {
-                showAlert(`User [${formData.userName}] created successfully!`, "success");
+        if (!formData.password) {
+            showAlert("Please enter a password.", "error");
+            return;
+        }
+        if (!formData.email) {
+            showAlert("Please enter an email.", "error");
+            return;
+        }
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+                body: JSON.stringify({
+                    userName: formData.userName,
+                    password: formData.password,
+                    email: formData.email,
+                    isAdmin: formData.isAdmin,
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (!response.ok) {
+                // Handle different error types
+                if (data.message === 'Username already exists') {
+                    showAlert("Username has been taken already.", "error");
+                } else if (data.message === 'Email already exists') {
+                    showAlert("Email is already registered.", "error");
+                } else {
+                    showAlert("Failed to create user: " + (data.message || "Unknown error"), "error");
+                }
+                return;
             }
-        } else {
-            showAlert("Username has been taken already.", "error");
+    
+            // Success case
+            if (data._id) {
+                handleReset();
+                const userType = formData.isAdmin ? "Admin" : "User";
+                showAlert(`${userType} [${formData.userName}] created successfully!`, "success");
+            }
+        } catch (error) {
+            console.error("Network error:", error);
+            showAlert("Failed to connect to the server.", "error");
         }
     };
-
+    
     const handleInputChange = (e) => {
         let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
         
@@ -290,46 +290,56 @@ const AdminPage = () => {
     const handleUpdateUser = async () => {
         try {
             const previousIsAdmin = selectedUser.isAdmin;
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
-                body: JSON.stringify({
-                    userName: formData.userName,
-                    password: formData.password,
-                    email: formData.email,
-                    isAdmin: formData.isAdmin,
-                }),
-            });
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, 
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify({
+                        userName: formData.userName,
+                        password: formData.password,
+                        email: formData.email,
+                        isAdmin: formData.isAdmin,
+                    }),
+                }
+            );
+    
             const data = await response.json();
+    
+            if (!response.ok) {
+                // Handle specific error messages from backend
+                if (data.message === 'Username already exists') {
+                    showAlert("Username has been taken already.", "error");
+                } else if (data.message === 'Email already exists') {
+                    showAlert("Email is already registered.", "error");
+                } else {
+                    showAlert("Failed to update user: " + (data.message || "Unknown error"), "error");
+                }
+                return;
+            }
+    
             if (data._id) {
                 console.log("User updated successfully");
                 setShowUserForm(false);
                 fetchUsers();
                 handleReset();
                 if (previousIsAdmin === formData.isAdmin) {
-                    if (formData.isAdmin) {
-                        showAlert(`Admin [${formData.userName}] updated successfully!`, "success");
-                    } else {
-                        showAlert(`User [${formData.userName}] updated successfully!`, "success");
-                    }
+                    const userType = formData.isAdmin ? "Admin" : "User";
+                    showAlert(`${userType} [${formData.userName}] updated successfully!`, "success");
                 } else {
-                    if (formData.isAdmin) {
-                        showAlert(`[${formData.userName}] has been updated to an Admin!`, "success");
-                    } else {
-                        showAlert(`[${formData.userName}] has been updated to a User!`, "success");
-                    }
+                    const newType = formData.isAdmin ? "Admin" : "Regular User";
+                    showAlert(`[${formData.userName}] updated to ${newType}!`, "success");
                 }
-            } else {
-                showAlert("Username has been taken already.", "error");
             }
         } catch (error) {
             console.error("Error updating user:", error);
+            showAlert("Failed to connect to the server.", "error");
         }
     };
-
+    
     const handleUpdateProduct = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct.productID}`, {
@@ -572,21 +582,21 @@ const AdminPage = () => {
                     <form onSubmit={handleSubmit}>
                         {activeTab === "newProduct" && (
                             <div className="form-content">
-                                <div className="form-row-1">
+                                {/* <div className="form-row-1">
                                     <label>Product ID:</label>
                                     <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} required />
-                                </div>
+                                </div> */}
                                 <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />
+                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Price:</label>
-                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} min="0" step="0.1" required />
+                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} min="0" step="0.1" />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Stock:</label>
-                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} min="0" step="1" required />
+                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} min="0" step="1" />
                                 </div>
                                 <div className="form-row-1">
                                     <label>Description:</label>
@@ -645,10 +655,10 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyProduct" && showProductForm && (
                             <div className="form-content">
-                                <div className="form-row-1">
+                                {/* <div className="form-row-1">
                                     <label>Product ID:</label>
                                     <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} readOnly />
-                                </div>
+                                </div> */}
                                 <div className="form-row-1">
                                     <label>Product name:</label>
                                     <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />
