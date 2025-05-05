@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Alert from "./AdminPageAlert";
 import "./AdminPage.css";
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const AdminPage = () => {
     const [activeTab, setActiveTab] = useState("newProduct");
@@ -10,6 +11,10 @@ const AdminPage = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showUserForm, setShowUserForm] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
     const [formData, setFormData] = useState({
         // productID: "",
         productName: "",
@@ -52,6 +57,7 @@ const AdminPage = () => {
         setSelectedProduct(null);
         setShowUserForm(false);
         setShowProductForm(false);
+        setShowPassword(false);
     }, []);
     
     useEffect(() => {
@@ -611,9 +617,24 @@ const AdminPage = () => {
                                     <label>Username:</label>
                                     <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row-1">
+                                {/* <div className="form-row-1">
                                     <label>Password:</label>
                                     <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
+                                </div> */}
+                                <div className="form-row-1">
+                                    <label>Password:</label>
+                                    <div className="password-input-container">
+                                        <input 
+                                            type={showPassword ? "text" : "password"} 
+                                            name="password" 
+                                            value={formData.password || ""} 
+                                            onChange={handleInputChange} 
+                                            placeholder="Please input the password" 
+                                        />
+                                        <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="form-row-1">
                                     <label>Email:</label>
@@ -635,9 +656,24 @@ const AdminPage = () => {
                                     <label>Username:</label>
                                     <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row-1">
+                                {/* <div className="form-row-1">
                                     <label>Password:</label>
                                     <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
+                                </div> */}
+                                <div className="form-row-1">
+                                    <label>Password:</label>
+                                    <div className="password-input-container">
+                                        <input 
+                                            type={showPassword ? "text" : "password"} 
+                                            name="password" 
+                                            value={formData.password || ""} 
+                                            onChange={handleInputChange} 
+                                            placeholder="Please input the password" 
+                                        />
+                                        <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="form-row-1">
                                     <label>Email:</label>

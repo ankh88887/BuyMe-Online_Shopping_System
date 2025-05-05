@@ -639,6 +639,30 @@ textarea {
     margin: 0 auto;
 }
 
+.password-input-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.password-input-container input {
+    flex: 1;
+    padding-right: 35px;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+}
+
+.password-toggle-icon:hover {
+    color: #333;
+}
+
 /*.admin-page {
     padding-top: 100px;
     min-height: calc(100vh - 100px);
