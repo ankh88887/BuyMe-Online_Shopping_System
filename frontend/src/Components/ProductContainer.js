@@ -17,7 +17,7 @@ export default function ProductContainer({ productJSON }) {
             <p className={styles.productName}>{product.productName}</p>
             <div className={styles.productDetails}>
                 <img src={process.env.PUBLIC_URL + '/Images/' + product.productImageDir} alt={product.productName} />
-                <table>
+                <table className={styles.productTable}>
                     <tbody>
                         <tr height="70px">
                             <td width="200px">Price:</td>
