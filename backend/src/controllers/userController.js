@@ -54,25 +54,23 @@ exports.LoginUser = async (req, res) => {
     const user = await User.findOne({
        userName: { $regex: userNameOrEmail, $options: 'i' } 
     });
+    console.log('User found:', user); // Log the found user
 
     if (!user) {
       console.log('User not found');
       return res.status(401).json({ error: 'Invalid username/email' });
     }
 
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) {
+    // const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (password === user.password) {
+      res.json(UserConstructor(user));
+    }
+    else {
+      console.log('entered password:', password);
+      console.log('User password:', user.password);
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    res.json({
-      _id: user._id,
-      userName: user.userName,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      address: user.address,
-      token: generateToken(user._id),
-    });
   } catch (error) {
     console.error('Error logging in user:', error);
     res.status(500).json({ error: 'Server error' });
