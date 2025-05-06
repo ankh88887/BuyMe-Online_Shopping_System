@@ -52,6 +52,7 @@ export default function Home(props) {
 
     return (
         <div>
+            <h1 className={style.HomeName} >Welcome to BuyMe</h1>
             <div
                 className={style.carousel}
                 onMouseEnter={() => setIsHovered(true)}
