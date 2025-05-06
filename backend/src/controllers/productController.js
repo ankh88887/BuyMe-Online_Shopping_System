@@ -15,7 +15,6 @@ function ProductConstructor(product) {
 
 // @desc    Get all products
 // @route   GET /api/products
-// @access  Public
 exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find({});
