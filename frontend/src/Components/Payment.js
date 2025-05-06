@@ -4,7 +4,6 @@ import axios from 'axios';
 import NavBar from './NavBar';
 import styles from './Payment.module.css';
 
-// Set the base URL for API calls
 const API_BASE_URL = 'http://localhost:5005';
 
 const PaymentPage = () => {
@@ -38,16 +37,16 @@ const PaymentPage = () => {
                 const response = await axios.get(`${API_BASE_URL}/users/${userID}`);
                 const user = response.data;
                 setPersonalInfo({
-                    userName: user.userName,
+                    userName: user.userName || '',
                     address: user.address || '',
-                    email: user.email,
-                    phone: '',
+                    email: user.email || '',
+                    phone: user.phone || '',
                 });
                 setTempPersonalInfo({
-                    userName: user.userName,
+                    userName: user.userName || '',
                     address: user.address || '',
-                    email: user.email,
-                    phone: '',
+                    email: user.email || '',
+                    phone: user.phone || '',
                 });
             } catch (error) {
                 console.error('Error fetching user info:', error);
@@ -59,17 +58,17 @@ const PaymentPage = () => {
                 const response = await axios.get(`${API_BASE_URL}/payments/${userID}`);
                 const payment = response.data;
                 setCardInfo({
-                    CardOwner: payment.CardOwner,
-                    CDNo: payment.CDNo.toString(),
-                    expiryDate: payment.expiryDate,
-                    CVV: payment.CVV.toString(),
+                    CardOwner: payment.CardOwner || '',
+                    CDNo: payment.CDNo ? payment.CDNo.toString() : '',
+                    expiryDate: payment.expiryDate || '',
+                    CVV: payment.CVV ? payment.CVV.toString() : '',
                     isEditable: true,
                 });
                 setTempCardInfo({
-                    CardOwner: payment.CardOwner,
-                    CDNo: payment.CDNo.toString(),
-                    expiryDate: payment.expiryDate,
-                    CVV: payment.CVV.toString(),
+                    CardOwner: payment.CardOwner || '',
+                    CDNo: payment.CDNo ? payment.CDNo.toString() : '',
+                    expiryDate: payment.expiryDate || '',
+                    CVV: payment.CVV ? payment.CVV.toString() : '',
                     isEditable: true,
                 });
             } catch (error) {
@@ -159,23 +158,40 @@ const PaymentPage = () => {
         }
     };
 
+    const isFormValid = () => {
+        const requiredPersonalFields = ['userName', 'address', 'email'];
+        const requiredCardFields = ['CardOwner', 'CDNo', 'expiryDate', 'CVV'];
+
+        const isPersonalValid = requiredPersonalFields.every(field => personalInfo[field] && personalInfo[field].trim() !== '');
+        const isCardValid = requiredCardFields.every(field => cardInfo[field] && cardInfo[field].trim() !== '');
+
+        return isPersonalValid && isCardValid;
+    };
+
     const handleConfirmPayment = async () => {
+        if (!isFormValid()) {
+            alert('Please fill in all required fields before confirming payment.');
+            return;
+        }
+
         try {
-            const cartID = `cart_${Date.now()}`;
-            await axios.post(`${API_BASE_URL}/carts`, {
-                CartID: cartID,
-                userID: userID,
+            // Update the existing active cart
+            const currentDate = new Date().toISOString();
+            await axios.put(`${API_BASE_URL}/carts/${userID}`, {
                 items: Object.fromEntries(items),
                 totalCost: parseFloat(totalCost),
+                purchaseDate: currentDate,
+                isActive: false,
             });
 
-            // Create a new empty cart to clear the current one
-            const newCartID = `cart_${Date.now() + 1}`;
+            // Create a new empty active cart
+            const newCartID = `cart_${Date.now()}`;
             await axios.post(`${API_BASE_URL}/carts`, {
                 CartID: newCartID,
                 userID: userID,
                 items: {},
                 totalCost: 0,
+                isActive: true,
             });
 
             alert('Payment confirmed successfully!');
@@ -198,7 +214,7 @@ const PaymentPage = () => {
                         <h3>Personal Info.</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Username</label>
+                                <label>Username *</label>
                                 {editPersonalMode ? (
                                     <input
                                         type="text"
@@ -217,7 +233,7 @@ const PaymentPage = () => {
                                 )}
                             </div>
                             <div className={styles.formGroup}>
-                                <label>Address</label>
+                                <label>Address *</label>
                                 {editPersonalMode ? (
                                     <input
                                         type="text"
@@ -238,7 +254,7 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Email</label>
+                                <label>Email *</label>
                                 {editPersonalMode ? (
                                     <input
                                         type="email"
@@ -289,7 +305,7 @@ const PaymentPage = () => {
                         <h3>Card Info.</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Card holder's name</label>
+                                <label>Card holder's name *</label>
                                 {editCardMode ? (
                                     <input
                                         type="text"
@@ -310,7 +326,7 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Card ID</label>
+                                <label>Card ID *</label>
                                 {editCardMode ? (
                                     <input
                                         type="text"
@@ -332,7 +348,7 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Expiry date</label>
+                                <label>Expiry date *</label>
                                 <div className={styles.expiryGroup}>
                                     {editCardMode ? (
                                         <input
@@ -355,7 +371,7 @@ const PaymentPage = () => {
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
-                                <label>CVV</label>
+                                <label>CVV *</label>
                                 {editCardMode ? (
                                     <input
                                         type="text"
@@ -401,7 +417,13 @@ const PaymentPage = () => {
                                 readOnly
                             />
                         </div>
-                        <button className={styles.btnConfirm} onClick={handleConfirmPayment}>Confirm</button>
+                        <button
+                            className={styles.btnConfirm}
+                            onClick={handleConfirmPayment}
+                            disabled={!isFormValid()}
+                        >
+                            Confirm
+                        </button>
                     </div>
                 </div>
             </div>

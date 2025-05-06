@@ -49,11 +49,17 @@ const ShoppingCart = () => {
     }, [userID]);
 
     const handleQuantityChange = async (id, delta) => {
-        const newItems = cartItems.map(item =>
-            item.id === id
-                ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-                : item
-        );
+        let newItems;
+        if (delta < 0 && cartItems.find(item => item.id === id).quantity === 1) {
+            // Remove item if quantity would go below 1
+            newItems = cartItems.filter(item => item.id !== id);
+        } else {
+            newItems = cartItems.map(item =>
+                item.id === id
+                    ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+                    : item
+            );
+        }
         setCartItems(newItems);
 
         const itemsMap = newItems.reduce((map, item) => {
@@ -76,6 +82,20 @@ const ShoppingCart = () => {
                     ? { ...item, quantity: newQuantity }
                     : item
             );
+            setCartItems(newItems);
+
+            const itemsMap = newItems.reduce((map, item) => {
+                map[item.id] = item.quantity;
+                return map;
+            }, {});
+            try {
+                await axios.put(`${API_BASE_URL}/carts/${userID}`, { items: itemsMap });
+            } catch (error) {
+                console.error('Error updating cart:', error);
+                fetchCartAndProducts();
+            }
+        } else if (newQuantity === 0) {
+            const newItems = cartItems.filter(item => item.id !== id);
             setCartItems(newItems);
 
             const itemsMap = newItems.reduce((map, item) => {
@@ -112,7 +132,7 @@ const ShoppingCart = () => {
             <NavBar />
             <div className={styles.cartContainer}>
                 <div className={styles.cartHeader}>
-                    <h1>(1770 x 860) shopping cart list</h1>
+                    <h1> shopping cart list</h1>
                 </div>
                 <div className={styles.cartSection}>
                     <table>
@@ -133,25 +153,22 @@ const ShoppingCart = () => {
                                     <tr key={item.id}>
                                         <td>{item.name}</td>
                                         <td>
-                                            <button
-                                                className={styles.quantityButton}
-                                                onClick={() => handleQuantityChange(item.id, -1)}
-                                            >
-                                                -
-                                            </button>
-                                            <input
-                                                type="number"
-                                                value={item.quantity}
-                                                onChange={(e) => handleQuantityInput(item.id, e.target.value)}
-                                                className={styles.quantityInput}
-                                                min="1"
-                                            />
-                                            <button
-                                                className={styles.quantityButton}
-                                                onClick={() => handleQuantityChange(item.id, 1)}
-                                            >
-                                                +
-                                            </button>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                                <button
+                                                    className={item.quantity === 1 ? styles.BtnDisable : styles.BtnAble}
+                                                    onClick={() => handleQuantityChange(item.id, -1)}
+                                                    disabled={item.quantity === 1}
+                                                >
+                                                    ⊖
+                                                </button>
+                                                <span className={styles.Qty}>{item.quantity}</span>
+                                                <button
+                                                    className={styles.BtnAble}
+                                                    onClick={() => handleQuantityChange(item.id, 1)}
+                                                >
+                                                    ⊕
+                                                </button>
+                                            </div>
                                         </td>
                                         <td>${(item.cost * item.quantity).toFixed(2)}</td>
                                     </tr>

@@ -6,176 +6,175 @@ import styles from './PurchaseHistory.module.css';
 const API_BASE_URL = 'http://localhost:5005';
 
 const PurchaseHistory = () => {
-    const [orders, setOrders] = useState([]);
+    const [purchases, setPurchases] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [ratings, setRatings] = useState({});
     const [comments, setComments] = useState({});
+    const [reviewExists, setReviewExists] = useState({});
 
-    const userID = localStorage.getItem('userID') || 'user123';
-
-    const fetchOrdersAndProducts = async () => {
-        setLoading(true);
-        try {
-            const cartResponse = await axios.get(`${API_BASE_URL}/carts/${userID}`);
-            const allCarts = cartResponse.data;
-
-            const completedCarts = Array.isArray(allCarts)
-                ? allCarts.filter(cart => cart.purchaseDate)
-                : allCarts.purchaseDate
-                ? [allCarts]
-                : [];
-
-            const ordersWithDetails = [];
-            for (const cart of completedCarts) {
-                const itemsMap = new Map(Object.entries(cart.items || {}));
-                const itemsWithDetails = [];
-
-                for (const [productID, quantity] of itemsMap) {
-                    try {
-                        const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
-                        const product = productResponse.data;
-                        itemsWithDetails.push({
-                            productID,
-                            name: product.productName,
-                            quantity,
-                        });
-                    } catch (error) {
-                        console.error(`Error fetching product ${productID}:`, error);
-                    }
-                }
-
-                ordersWithDetails.push({
-                    cartID: cart.CartID,
-                    purchaseDate: cart.purchaseDate,
-                    items: itemsWithDetails,
-                });
-            }
-
-            setOrders(ordersWithDetails);
-        } catch (error) {
-            console.error('Error fetching purchase history:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const userID = localStorage.getItem('userID') || 'testUser123';
 
     useEffect(() => {
-        fetchOrdersAndProducts();
+        const fetchPurchaseHistory = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await axios.get(`${API_BASE_URL}/carts/${userID}`);
+                const carts = response.data.filter(cart => cart.purchaseDate && !cart.isActive);
+                const detailedPurchases = await Promise.all(carts.map(async (cart) => {
+                    const items = await Promise.all(Object.entries(cart.items).map(async ([productID, quantity]) => {
+                        const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
+                        const reviewResponse = await axios.get(`${API_BASE_URL}/reviews/check?userID=${userID}&productID=${productID}`);
+                        return {
+                            productID,
+                            productName: productResponse.data.productName || `Product ${productID} (Not Found)`,
+                            quantity,
+                            reviewExists: reviewResponse.data.exists
+                        };
+                    }));
+                    return { ...cart, items };
+                }));
+                setPurchases(detailedPurchases);
+                const initialReviewExists = detailedPurchases.reduce((acc, purchase) => {
+                    purchase.items.forEach(item => {
+                        acc[`${purchase.CartID}-${item.productID}`] = item.reviewExists;
+                    });
+                    return acc;
+                }, {});
+                setReviewExists(initialReviewExists);
+            } catch (error) {
+                console.error('Error fetching purchase history or reviews:', error);
+                setError('Failed to load purchase history or reviews. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPurchaseHistory();
     }, [userID]);
 
-    const handleRatingChange = (productID, cartID, value) => {
-        setRatings(prev => ({ ...prev, [`${productID}_${cartID}`]: value }));
+    const handleRatingChange = (orderID, productID, value) => {
+        setRatings(prev => ({
+            ...prev,
+            [`${orderID}-${productID}`]: value
+        }));
     };
 
-    const handleCommentChange = (productID, cartID, value) => {
-        setComments(prev => ({ ...prev, [`${productID}_${cartID}`]: value }));
+    const handleCommentChange = (orderID, productID, value) => {
+        setComments(prev => ({
+            ...prev,
+            [`${orderID}-${productID}`]: value
+        }));
     };
 
-    const handleSubmitReview = async (productID, cartID) => {
-        const rating = ratings[`${productID}_${cartID}`];
-        const comment = comments[`${productID}_${cartID}`] || '';
-
-        if (!rating) {
-            alert('Please select a rating before submitting.');
+    const handleSubmitReview = async (orderID, productID) => {
+        const rate = ratings[`${orderID}-${productID}`];
+        const comment = comments[`${orderID}-${productID}`] || '';
+        if (!rate) {
+            alert('Please select a rating (1-5) before submitting.');
             return;
         }
 
         try {
-            const reviewID = `review_${productID}_${cartID}_${Date.now()}`;
+            const reviewID = `review_${Date.now()}-${productID}`;
             await axios.post(`${API_BASE_URL}/reviews`, {
                 reviewID,
                 ProductID: productID,
                 userID,
                 comment,
-                rate: parseInt(rating, 10),
+                rate
             });
-
-            const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
-            const product = productResponse.data;
-            const newRateCount = product.rateCount + 1;
-            const newTotalRate = product.totalRate + parseInt(rating, 10);
-            await axios.put(`${API_BASE_URL}/products/${productID}`, {
-                rateCount: newRateCount,
-                totalRate: newTotalRate,
-            });
-
             alert('Review submitted successfully!');
-            setRatings(prev => ({ ...prev, [`${productID}_${cartID}`]: undefined }));
-            setComments(prev => ({ ...prev, [`${productID}_${cartID}`]: undefined }));
+            setReviewExists(prev => ({ ...prev, [`${orderID}-${productID}`]: true }));
+            const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
+            const currentRateCount = productResponse.data.rateCount || 0;
+            const currentTotalRate = productResponse.data.totalRate || 0;
+            await axios.put(`${API_BASE_URL}/products/${productID}`, {
+                rateCount: currentRateCount + 1,
+                totalRate: currentTotalRate + rate
+            });
         } catch (error) {
             console.error('Error submitting review:', error);
-            alert('Failed to submit review');
+            alert('Failed to submit review. Please try again.');
         }
     };
 
-    if (loading) return <p>Loading...</p>;
-
+    if (loading) return <div className={styles.loading}>Loading...</div>;
+    if (error) return <div className={styles.errorMessage}>{error}</div>;
     return (
         <div className={styles.historyBackground}>
             <NavBar />
             <div className={styles.historyContainer}>
                 <div className={styles.historyHeader}>
-                    <h1>(1770 x 860) Purchase History</h1>
+                    <h1>Purchase History</h1>
                 </div>
                 <div className={styles.historySection}>
-                    {orders.length === 0 ? (
-                        <p>No purchase history available.</p>
+                    {purchases.length === 0 ? (
+                        <p>No purchase history available</p>
                     ) : (
-                        orders.map(order => (
-                            <div key={order.cartID} className={styles.orderBlock}>
-                                <h3>Your order:</h3>
-                                <p>(1770 x 310) List of the order details</p>
-                                <p><strong>Order ID:</strong> {order.cartID}</p>
-                                <p><strong>Order Date:</strong> {order.purchaseDate}</p>
+                        purchases.map((purchase) => (
+                            <div key={purchase.CartID} className={styles.orderTable}>
+                                <h2>Your Order</h2>
                                 <table>
                                     <thead>
                                         <tr>
+                                            <th>Order ID:</th>
+                                            <td>{purchase.CartID}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Order Date:</th>
+                                            <td>{purchase.purchaseDate}</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className={styles.tableHeader}>
                                             <th>Product Name</th>
                                             <th>Quantity</th>
                                             <th>Rate (1-5)</th>
                                             <th>Comment</th>
-                                            <th></th>
+                                            <th>Action</th>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {order.items.map(item => (
-                                            <tr key={`${item.productID}_${order.cartID}`}>
-                                                <td>{item.name}</td>
-                                                <td>{item.quantity}</td>
-                                                <td>
-                                                    <select
-                                                        value={ratings[`${item.productID}_${order.cartID}`] || ''}
-                                                        onChange={(e) =>
-                                                            handleRatingChange(item.productID, order.cartID, e.target.value)
-                                                        }
-                                                    >
-                                                        <option value="">Select</option>
-                                                        {[1, 2, 3, 4, 5].map(num => (
-                                                            <option key={num} value={num}>{num}</option>
-                                                        ))}
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        value={comments[`${item.productID}_${order.cartID}`] || ''}
-                                                        onChange={(e) =>
-                                                            handleCommentChange(item.productID, order.cartID, e.target.value)
-                                                        }
-                                                        className={styles.commentInput}
-                                                        placeholder="Add a comment"
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className={styles.submitButton}
-                                                        onClick={() => handleSubmitReview(item.productID, order.cartID)}
-                                                    >
-                                                        Submit
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {purchase.items.map((item) => {
+                                            const key = `${purchase.CartID}-${item.productID}`;
+                                            return (
+                                                <tr key={item.productID}>
+                                                    <td>{item.productName}</td>
+                                                    <td>{item.quantity}</td>
+                                                    <td>
+                                                        <select
+                                                            value={ratings[key] || ''}
+                                                            onChange={(e) => handleRatingChange(purchase.CartID, item.productID, e.target.value)}
+                                                            className={styles.ratingSelect}
+                                                            disabled={reviewExists[key]}
+                                                        >
+                                                            <option value="">Select Rating</option>
+                                                            {[1, 2, 3, 4, 5].map((num) => (
+                                                                <option key={num} value={num}>{num}</option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="text"
+                                                            value={comments[key] || ''}
+                                                            onChange={(e) => handleCommentChange(purchase.CartID, item.productID, e.target.value)}
+                                                            placeholder="Add a comment..."
+                                                            className={styles.commentInput}
+                                                            disabled={reviewExists[key]}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            onClick={() => handleSubmitReview(purchase.CartID, item.productID)}
+                                                            className={styles.submitButton}
+                                                            disabled={reviewExists[key]}
+                                                        >
+                                                            {reviewExists[key] ? 'Submitted' : 'Submit'}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

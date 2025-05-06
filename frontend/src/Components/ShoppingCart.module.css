@@ -33,14 +33,13 @@
 
 .cartSection {
     margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
 th, td {
@@ -63,47 +62,64 @@ tr:hover {
     background-color: rgba(28, 52, 85, 0.1);
 }
 
-.quantityButton {
-    background-color: #1c3455;
-    color: white;
+.BtnAble {
+    color: #000000;
+    background-color: transparent;
     border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
     cursor: pointer;
-    margin: 0 5px;
-    font-weight: bold;
+    font-size: 20px;
 }
 
-.quantityButton:hover {
-    background-color: #142a47;
+.BtnAble:hover {
+    color: #777777;
+    background-color: transparent;
 }
 
-.quantityValue {
-    margin: 0 10px;
-    font-size: 16px;
+.BtnDisable {
+    color: #cccccc;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+}
+
+.BtnDisable:hover {
+    background-color: transparent;
+}
+
+.Qty {
+    display: inline-block;
+    min-width: 50px;
+    min-height: 35px;
+    font-size: 20px;
+    text-align: center;
+    border: 1px solid #000000;
+    margin: 10px;
 }
 
 .cartFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 20px;
+    margin-top: 30px;
+    text-align: right;
 }
 
 .totalRow {
+    margin-bottom: 10px;
     display: flex;
+    justify-content: flex-end;
     align-items: center;
-    gap: 10px;
+}
+
+.totalRow span {
+    font-size: 18px;
+    margin-right: 10px;
 }
 
 .totalInput {
     width: 100px;
-    padding: 10px;
+    padding: 5px;
+    font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 16px;
-    background-color: #fff;
-    text-align: center;
+    text-align: right;
 }
 
 .payButton {
@@ -113,12 +129,19 @@ tr:hover {
     padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
     font-weight: bold;
-    transition: background-color 0.3s;
+    margin-top: 10px;
 }
 
 .payButton:hover {
     background-color: #142a47;
+}
+
+.payButton:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
@@ -135,17 +158,24 @@ tr:hover {
         font-size: 14px;
     }
 
-    .quantityButton {
-        padding: 4px 8px;
-        font-size: 14px;
+    .BtnAble,
+    .BtnDisable {
+        font-size: 16px;
     }
 
-    .quantityValue {
-        font-size: 14px;
+    .Qty {
+        min-width: 40px;
+        min-height: 30px;
+        font-size: 16px;
+        margin: 5px;
+    }
+
+    .totalRow span {
+        font-size: 16px;
     }
 
     .totalInput {
-        padding: 8px;
+        width: 80px;
         font-size: 14px;
     }
 

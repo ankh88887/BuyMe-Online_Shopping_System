@@ -1,16 +1,12 @@
 const mongoose = require('mongoose');
 
 const cartSchema = new mongoose.Schema({
-    CartID: {type: String, required: true, unique: true},
-    userID: {type: String, required: true},
-    purchaseDate: {type: String},
-    items: {type: Map, of: Number},
-    totalCost: {type: Number},
-    status: { type: String, enum: ['active', 'completed'], default: 'active' }
+    CartID: { type: String, required: true, unique: true },
+    userID: { type: String, required: true },
+    purchaseDate: { type: String, default: null },
+    items: { type: Map, of: Number, default: new Map() },
+    totalCost: { type: Number },
+    isActive: { type: Boolean, default: true } // New field, defaults to true
 });
 
-
-
-const Cart = mongoose.model('Cart', cartSchema);
-
-module.exports = Cart;
+module.exports = mongoose.model('Cart', cartSchema);

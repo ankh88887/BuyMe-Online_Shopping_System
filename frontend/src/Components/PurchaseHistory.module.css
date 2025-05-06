@@ -1,131 +1,193 @@
 .historyBackground {
-    background-color: #fdf9de;
+    background-color: #f5f5f5;
     min-height: 100vh;
     padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
 }
 
 .historyContainer {
-    width: 100%;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 30px;
-    background-color: white;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .historyHeader {
-    margin-bottom: 30px;
-    padding: 15px 20px;
-    background-color: #1c3455;
-    border-radius: 8px;
-    color: white;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .historyHeader h1 {
-    color: white;
+    font-size: 2rem;
+    color: #333;
     margin: 0;
-    font-size: 28px;
 }
 
 .historySection {
-    margin-bottom: 30px;
-}
-
-.orderBlock {
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.orderBlock h3 {
-    color: #1c3455;
-    margin-bottom: 10px;
-    font-size: 20px;
-}
-
-.orderBlock p {
-    margin: 5px 0;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
 }
 
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+.orderTable {
+    margin-bottom: 30px;
 }
 
-th {
-    background-color: #1c3455;
-    color: white;
+.orderTable h2 {
+    font-size: 1.5rem;
+    color: #1c3455;
+    margin-bottom: 10px;
+}
+
+.orderTable table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.orderTable th,
+.orderTable td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    font-size: 1rem;
+}
+
+.orderTable th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+    color: #333;
+}
+
+.tableHeader th {
+    background-color: #e9ecef;
     font-weight: bold;
 }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9;
+.orderTable td {
+    background-color: #fff;
 }
 
-tr:hover {
-    background-color: rgba(28, 52, 85, 0.1);
-}
-
-select,
+.ratingSelect,
 .commentInput {
     padding: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ratingSelect {
+    width: 120px;
 }
 
 .commentInput {
-    width: 100%;
+    width: 200px;
 }
 
 .submitButton {
-    background-color: #1c3455;
+    background-color: #4CAF50;
     color: white;
+    padding: 8px 16px;
     border: none;
-    padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-    font-weight: bold;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
 }
 
 .submitButton:hover {
-    background-color: #142a47;
+    background-color: #45a049;
 }
 
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 20px;
+}
+
+.errorMessage {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #d32f2f;
+    padding: 20px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .historyBackground {
-        padding: 10px;
-    }
-
     .historyContainer {
-        padding: 20px;
+        padding: 15px;
     }
 
-    th, td {
+    .historyHeader h1 {
+        font-size: 1.5rem;
+    }
+
+    .orderTable h2 {
+        font-size: 1.2rem;
+    }
+
+    .orderTable th,
+    .orderTable td {
+        font-size: 0.9rem;
         padding: 8px;
-        font-size: 14px;
     }
 
-    select,
+    .ratingSelect {
+        width: 100px;
+    }
+
     .commentInput {
-        padding: 4px;
-        font-size: 14px;
+        width: 150px;
     }
 
     .submitButton {
-        padding: 4px 8px;
-        font-size: 14px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .orderTable table,
+    .orderTable thead,
+    .orderTable tbody,
+    .orderTable th,
+    .orderTable td,
+    .orderTable tr {
+        display: block;
+    }
+
+    .orderTable th,
+    .orderTable td {
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+    }
+
+    .orderTable th::before,
+    .orderTable td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .tableHeader {
+        display: none;
+    }
+
+    .ratingSelect,
+    .commentInput {
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .submitButton {
+        width: 100%;
+        padding: 10px;
     }
 }
