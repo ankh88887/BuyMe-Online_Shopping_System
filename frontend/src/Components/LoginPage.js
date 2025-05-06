@@ -3,7 +3,7 @@ import { useState } from "react";
 import './style.css';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [userNameOrEmail, setUserNameOrEmail] = useState(''); // Updated to accept username or email
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ export default function Login() {
       const response = await fetch('http://localhost:5005/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userNameOrEmail, password }), // Updated to send userNameOrEmail
       });
 
       const data = await response.json();
@@ -25,7 +25,7 @@ export default function Login() {
         alert('Login successful!');
         navigate('/'); // Redirect to the home page
       } else {
-        alert(data.message); // Show error message
+        alert(data.error || 'Failed to login'); // Show error message from the backend
       }
     } catch (err) {
       console.error(err);
@@ -44,8 +44,8 @@ export default function Login() {
               <input
                 type="text"
                 placeholder="Username/Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={userNameOrEmail} // Updated to bind userNameOrEmail
+                onChange={(e) => setUserNameOrEmail(e.target.value)} // Updated to set userNameOrEmail
                 required
                 autoFocus
               />

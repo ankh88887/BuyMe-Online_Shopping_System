@@ -44,10 +44,10 @@ function AppContent({ navHeight, cartItems, setCartItems }) {
       <CartContext.Provider value={{ cartItems, setCartItems }}>
         <div style={{ marginTop: `${navHeight}px`, overflowY: 'auto', overflowX: 'auto' }}>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgetpw" element={<ForgetPasswordPage />} />
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route
               path="/profile"
               element={
