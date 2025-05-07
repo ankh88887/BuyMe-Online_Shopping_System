@@ -9,45 +9,45 @@ export default function NavBar() {
     const navigate = useNavigate(); // Hook for navigation
 
     //useEffect(() => {
-        // Mock admin user for testing
-   //     setCurrentUser({
+    // Mock admin user for testing
+    //     setCurrentUser({
     //        userID: '12345',
-     //       userName: 'AdminUser',
-     //       email: 'admin@example.com',
+    //       userName: 'AdminUser',
+    //       email: 'admin@example.com',
     //        isAdmin: true, // Set isAdmin to true for testing
     //    });
-   // }, [setCurrentUser]);
+    // }, [setCurrentUser]);
 
-   useEffect(() => {
-    const fetchCurrentUser = async () => {
-        try {
-            // Fetch the current user from the backend or localStorage
-            const storedUser = localStorage.getItem('currentUser');
-            if (storedUser) {
-                setCurrentUser(JSON.parse(storedUser)); // Set the user from localStorage
-            } else {
-                // Optionally, fetch from an API if not found in localStorage
-                const response = await fetch('http://localhost:5005/api/users/current');
-                if (response.ok) {
-                    const user = await response.json();
-                    setCurrentUser(user); // Set the user from the API response
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                // Fetch the current user from the backend or localStorage
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    setCurrentUser(JSON.parse(storedUser)); // Set the user from localStorage
                 } else {
-                    console.error('Failed to fetch current user');
+                    // Optionally, fetch from an API if not found in localStorage
+                    const response = await fetch('http://localhost:5005/api/users/current');
+                    if (response.ok) {
+                        const user = await response.json();
+                        setCurrentUser(user); // Set the user from the API response
+                    } else {
+                        console.error('Failed to fetch current user');
+                    }
                 }
+            } catch (error) {
+                console.error('Error fetching current user:', error);
             }
-        } catch (error) {
-            console.error('Error fetching current user:', error);
-        }
-    };
+        };
 
-    fetchCurrentUser();
-}, [setCurrentUser]);
+        fetchCurrentUser();
+    }, [setCurrentUser]);
 
     const logoutOnClick = () => {
         if (currentUser) {
             console.log(`Logging out user: ${currentUser.userName}`);
             setCurrentUser(null); // Clear the current user
-localStorage.removeItem('currentUser'); // Clear user from localStorage
+            localStorage.removeItem('currentUser'); // Clear user from localStorage
             navigate('/logout'); // Redirect to the logout page
         }
     };
