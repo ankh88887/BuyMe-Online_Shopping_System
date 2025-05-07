@@ -83,7 +83,7 @@ exports.LoginUser = async (req, res) => {
 // @desc    First time register a user (default is not admin)
 // @route   GET /api/Users/register
 
-exports.registerUser = async (req, res) => {
+exports.RegisterUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
