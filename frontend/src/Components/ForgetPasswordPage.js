@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './style.css';
+import { Link } from 'react-router-dom';
 
 export default function ForgetPasswordPage() {
   const [userName, setUserName] = useState('');
@@ -87,6 +88,9 @@ export default function ForgetPasswordPage() {
                 Change Password
               </button>
             </form>
+            <p className="account">
+              Login?<Link to="/login"> Click here </Link>
+            </p>
           </div>
           <div className="form-img">
             <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" />

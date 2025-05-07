@@ -32,8 +32,9 @@ export default function LogoutPage() {
       <h1></h1>
       <div className="container">
         <div className="main">
-          <div className="content">
+          <div className="content"> 
             <h2>You are logged out. See you next time!</h2>
+            <h2>Thank you for using BuyMe! BuyMe, Buy More</h2>
             <button className="button" type="button" onClick={handleLogout}>
               <Link to="/login">Login Page</Link>
             </button>

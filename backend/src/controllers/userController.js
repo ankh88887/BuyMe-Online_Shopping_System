@@ -107,8 +107,13 @@ exports.RegisterUser = async (req, res) => {
       }
     }
 
+    // Generate userID based on the latest user in the database
+    const latestUser = await User.findOne().sort({ userID: -1 }); // Find the user with the highest userID
+    const userID = latestUser ? latestUser.userID + 1 : 1; // If no users exist, start with userID = 1
+
     // Create a new user
     const newUser = new User({
+      userID,
       username,
       email,
       password, // Make sure to hash the password before saving
@@ -116,13 +121,18 @@ exports.RegisterUser = async (req, res) => {
       isAdmin: false, // Default to false
     });
 
+    console.log(userName, email, password, confirmPassword); // Log the input values for debugging
+    // Check if the user exists in the database
+
     await newUser.save();
 
     res.status(201).json({
       message: 'User registered successfully',
       user: {
-        username: newUser.username,
+        userID: newUser.userID,
+        userName: newUser.username,
         email: newUser.email,
+        password: newUser.password,
         isAdmin: newUser.isAdmin,
       },
     });
@@ -180,6 +190,8 @@ exports.ForgetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 8 characters long and contain both letters and numbers.' });
     }
 
+    console.log(userName, email, password, confirmPassword); // Log the input values for debugging
+    // Check if the user exists in the database
     // Find the user by username and email
     const user = await User.findOne({ userName, email });
 

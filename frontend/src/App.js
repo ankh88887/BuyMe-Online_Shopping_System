@@ -42,7 +42,7 @@ function App() {
 
 function AppContent({ navHeight, cartItems, setCartItems }) {
   const location = useLocation();
-  const hideNavBarRoutes = ['/login', '/signup', '/forgetpw'];
+  const hideNavBarRoutes = ['/login', '/signup', '/forgetpw', '/logout'];
 
   return (
     <div>
@@ -53,12 +53,19 @@ function AppContent({ navHeight, cartItems, setCartItems }) {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgetpw" element={<ForgetPasswordPage />} />
-            <Route path="/" element={<Home />} />
             <Route
               path="/profile"
               element={
                 <ProtectedRoute>
                   <UserProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
                 </ProtectedRoute>
               }
             />
