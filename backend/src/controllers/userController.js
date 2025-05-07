@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 
 function UserConstructor(user) {
@@ -64,8 +65,8 @@ exports.LoginUser = async (req, res) => {
       return res.status(401).json({ error: 'Invalid username/email' });
     }
 
-    // const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (password === user.password) {
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (isPasswordMatch) {
       res.json(UserConstructor(user));
     }
     else {
@@ -200,7 +201,6 @@ exports.ForgetPassword = async (req, res) => {
     }
 
     // Hash the new password
-    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Update the user's password in the database
