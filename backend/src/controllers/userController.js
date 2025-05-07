@@ -86,7 +86,7 @@ exports.LoginUser = async (req, res) => {
 
 exports.RegisterUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, confirmPassword } = req.body;
 
     // Validate password strength
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
@@ -96,11 +96,11 @@ exports.RegisterUser = async (req, res) => {
 
     // Check if the username or email already exists
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
+      $or: [{ userName: username }, { email: email }],
     });
-
+    console.log('Existing user:', existingUser); // Log the search
     if (existingUser) {
-      if (existingUser.username === username) {
+      if (existingUser.userName === username) {
         return res.status(400).json({ message: 'Username is already taken' });
       }
       if (existingUser.email === email) {
@@ -110,19 +110,19 @@ exports.RegisterUser = async (req, res) => {
 
     // Generate userID based on the latest user in the database
     const latestUser = await User.findOne().sort({ userID: -1 }); // Find the user with the highest userID
-    const userID = latestUser ? latestUser.userID + 1 : 1; // If no users exist, start with userID = 1
+    const userID = latestUser ? parseInt(latestUser.userID) + 1 : 1; // If no users exist, start with userID = 1
 
     // Create a new user
     const newUser = new User({
-      userID,
-      username,
-      email,
-      password, // Make sure to hash the password before saving
-      //password: await bcrypt.hash(password, 10), // Hash the password before saving
+      userID: userID,
       isAdmin: false, // Default to false
+      userName: username,
+      password: await bcrypt.hash(password, 10), // Hash the password before saving
+      email: email,
+      address: "",
     });
 
-    console.log(userName, email, password, confirmPassword); // Log the input values for debugging
+    console.log(username, email, password, confirmPassword); // Log the input values for debugging
     // Check if the user exists in the database
 
     await newUser.save();
