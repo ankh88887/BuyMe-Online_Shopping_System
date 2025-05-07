@@ -25,7 +25,6 @@ export default function Login() {
 
         // Set the current user
         setCurrentUser(user);
-        alert('Login successful!');
         console.log('Current User:', user); // Log the current user for testing
         console.log('User ID:', user.userID); // Log the userID for testing
         navigate('/'); // Redirect to the home page
