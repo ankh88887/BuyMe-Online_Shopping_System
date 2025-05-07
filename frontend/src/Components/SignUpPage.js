@@ -18,20 +18,33 @@ export default function SignUp() {
       return;
     }
 
+    // Check password strength
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
+    if (!passwordRegex.test(password)) {
+      alert('Password must be at least 8 characters long and contain both letters and numbers.');
+      return;
+    }
+
     try {
+      // Send user data to the backend
       const response = await fetch('http://localhost:5005/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        const user = await response.json();
+        console.log('User created:', user); // Log the created user for testing
         alert('Account created successfully!');
         navigate('/login'); // Redirect to the login page
       } else {
-        alert(data.message); // Show error message from the backend
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to create account');
       }
     } catch (err) {
       console.error(err);
@@ -93,4 +106,3 @@ export default function SignUp() {
     </div>
   );
 }
-  

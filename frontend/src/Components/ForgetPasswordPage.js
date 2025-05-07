@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './style.css';
 
 export default function ForgetPasswordPage() {
-  const [username, setUsername] = useState('');
+  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
@@ -13,30 +13,35 @@ export default function ForgetPasswordPage() {
     e.preventDefault();
 
     // Check if the new passwords match
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
 
+    // Check password strength
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
+    if (!passwordRegex.test(password)) {
+      alert('Password must be at least 8 characters long and contain both letters and numbers.');
+      return;
+    }
+
     try {
+      // Send request to verify user and update password
       const response = await fetch('http://localhost:5005/api/users/forget-password', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, newPassword }),
+        body: JSON.stringify({ userName, email, password }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        // If the backend confirms the username and email match, and the password is updated
-        alert('Password changed successfully!');
+        alert('Password updated successfully!');
         navigate('/login'); // Redirect to the login page
       } else {
-        // If the username and email do not match or any other error occurs
-        alert(data.message); // Show the error message from the backend
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to update password');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error('Error:', error);
       alert('An error occurred. Please try again.');
     }
   };
@@ -52,8 +57,8 @@ export default function ForgetPasswordPage() {
               <input
                 type="text"
                 placeholder="Current username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
                 required
                 autoFocus
               />
@@ -67,8 +72,8 @@ export default function ForgetPasswordPage() {
               <input
                 type="password"
                 placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <input

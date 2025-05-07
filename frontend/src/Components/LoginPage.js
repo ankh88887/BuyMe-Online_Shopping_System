@@ -1,35 +1,41 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import './style.css';
+import React, { useContext, useState } from "react";
+import { CurrentLoginUser } from "./CurrentLoginUser";
 
 export default function Login() {
-  const [userNameOrEmail, setUserNameOrEmail] = useState(''); // Updated to accept username or email
+  const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      // Send login data to the backend
       const response = await fetch('http://localhost:5005/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userNameOrEmail, password }), // Updated to send userNameOrEmail
+        body: JSON.stringify({ userNameOrEmail, password }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        // Store the token or user info in localStorage
-        localStorage.setItem('currentUser', JSON.stringify(data));
+        const user = await response.json();
+
+        // Set the current user
+        setCurrentUser(user);
         alert('Login successful!');
+        console.log('Current User:', user); // Log the current user for testing
+        console.log('User ID:', user.userID); // Log the userID for testing
         navigate('/'); // Redirect to the home page
       } else {
-        alert(data.error || 'Failed to login'); // Show error message from the backend
+        const errorData = await response.json();
+        alert(errorData.message || 'Invalid username/email or password!');
       }
-    } catch (err) {
-      console.error(err);
-      alert('Password or email is incorrect!');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
     }
   };
 
@@ -44,8 +50,8 @@ export default function Login() {
               <input
                 type="text"
                 placeholder="Username/Email"
-                value={userNameOrEmail} // Updated to bind userNameOrEmail
-                onChange={(e) => setUserNameOrEmail(e.target.value)} // Updated to set userNameOrEmail
+                value={userNameOrEmail}
+                onChange={(e) => setUserNameOrEmail(e.target.value)}
                 required
                 autoFocus
               />
@@ -60,6 +66,9 @@ export default function Login() {
                 Login
               </button>
             </form>
+            {currentUser && (
+              <p>Logged in as: {currentUser.userName || currentUser.email} (User ID: {currentUser.userID})</p>
+            )}
             <p className="account">
               Forget Password? <Link to="/forgetpw">Click here</Link>
             </p>

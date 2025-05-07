@@ -52,7 +52,10 @@ exports.LoginUser = async (req, res) => {
   try {
     console.log('Searching for user with:', userNameOrEmail);
     const user = await User.findOne({
-       userName: { $regex: userNameOrEmail, $options: 'i' } 
+      $or: [
+        { userName: { $regex: userNameOrEmail, $options: 'i' } }, // Case-insensitive search for username
+        { email: { $regex: userNameOrEmail, $options: 'i' } }    // Case-insensitive search for email
+      ]
     });
     console.log('User found:', user); // Log the found user
 
@@ -77,61 +80,126 @@ exports.LoginUser = async (req, res) => {
   }
 };
 
-exports.RegisterUser = async (req, res) => {
-  const { userNameOrEmail, password } = req.body; // Accept either username or email and password from the request body
+// @desc    First time register a user (default is not admin)
+// @route   GET /api/Users/register
 
+exports.registerUser = async (req, res) => {
   try {
-    // Search for the user by username or email
-    const user = await User.findOne({
-      $or: [{ userName: userNameOrEmail }, { email: userNameOrEmail }],
+    const { username, email, password } = req.body;
+
+    // Validate password strength
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long and contain both letters and numbers.' });
+    }
+
+    // Check if the username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
     });
 
-    if (user && (await user.matchPassword(password))) { // Check if the user exists and the password matches
-      console.log('User found:', user); // Log the found user
-      res.json({
-        _id: user._id,
-        userName: user.userName,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        address: user.address,
-        token: generateToken(user._id), // Generate a token for the user
-      });
-    } else {
-      console.log('Invalid username/email or password'); // Log invalid credentials
-      res.status(401).json({ error: 'Invalid username/email or password' }); // Handle invalid credentials
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Username is already taken' });
+      }
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Email is already registered' });
+      }
     }
+
+    // Create a new user
+    const newUser = new User({
+      username,
+      email,
+      password, // Make sure to hash the password before saving
+      //password: await bcrypt.hash(password, 10), // Hash the password before saving
+      isAdmin: false, // Default to false
+    });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        isAdmin: newUser.isAdmin,
+      },
+    });
   } catch (error) {
-    console.error('Error logging in user:', error); // Log the error
-    res.status(500).json({ error: 'Server error' }); // Handle server error
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
+//exports.RegisterUser = async (req, res) => {
+//  try {
+//    const { userName, password, email, isAdmin} = req.body;
+//    
+//    const user = await createUser(userName, password, email, isAdmin);
+//   
+//    if (user) {
+//        res.status(201).json({
+//            _id: user._id,
+//            userName: user.userName,
+//            email: user.email,
+//           isAdmin: False,
+//            address: user.address,
+//            // token: generateToken(user._id), // Uncomment if using tokens/
+//        });
+//    } else {
+//        res.status(400).json({ message: 'Invalid user data' });
+//    }
+//} catch (error) {
+//    console.error(error);
+//    res.status(500).json({ message: 'Server Error' });
+//}
+//};
+
+
+// @desc    change passoword requested by user
+// @route   GET /api/Users/forget-password/:userID
+
 exports.ForgetPassword = async (req, res) => {
-  const { userNameOrEmail, password } = req.body; // Accept either username or email and password from the request body
-
   try {
-    // Search for the user by username or email
-    const user = await User.findOne({
-      $or: [{ userName: userNameOrEmail }, { email: userNameOrEmail }],
-    });
+    const { userName, email, password, confirmPassword } = req.body;
 
-    if (user && (await user.matchPassword(password))) { // Check if the user exists and the password matches
-      console.log('User found:', user); // Log the found user
-      res.json({
-        _id: user._id,
-        userName: user.userName,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        address: user.address,
-        token: generateToken(user._id), // Generate a token for the user
-      });
-    } else {
-      console.log('Invalid username/email or password'); // Log invalid credentials
-      res.status(401).json({ error: 'Invalid username/email or password' }); // Handle invalid credentials
+    // Check if all required fields are provided
+    if (!userName || !email || !password || !confirmPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
+
+    // Check if the passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    // Validate password strength
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long and contain both letters and numbers.' });
+    }
+
+    // Find the user by username and email
+    const user = await User.findOne({ userName, email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Username and Email do not match' });
+    }
+
+    // Hash the new password
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the user's password in the database
+    user.password = hashedPassword;
+    await user.save();
+
+    // Notify the user and redirect them to the login page
+    res.status(200).json({ message: 'Password updated successfully. Please log in with your new password.' });
   } catch (error) {
-    console.error('Error logging in user:', error); // Log the error
-    res.status(500).json({ error: 'Server error' }); // Handle server error
+    console.error('Error in ForgetPassword:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
@@ -304,6 +372,8 @@ exports.ForgetPassword = async (req, res) => {
 //         res.status(500).json({ message: 'Server Error' });
 //     }
 // });
+
+
 
 
 

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import NavBar from './Components/NavBar';
 import Home from "./Pages/Home";
 import { CartContext } from './Components/CartContext';
@@ -13,10 +14,12 @@ import ForgetPasswordPage from './Pages/ForgetPassword';
 import SignUpPage from './Pages/Signup';
 import LogoutPage from './Pages/Logout';
 import ProtectedRoute from "./Components/protectedroute";
+import { CurrentLoginUser } from './Components/CurrentLoginUser';
 
 function App() {
   const [navHeight, setNavHeight] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null); // Initialize currentUser state
 
   useEffect(() => {
     const navBar = document.querySelector('nav');
@@ -28,26 +31,29 @@ function App() {
   return (
     <div>
       <BrowserRouter>
-        <AppContent navHeight={navHeight} cartItems={cartItems} setCartItems={setCartItems} />
+        {/* Provide currentUser and setCurrentUser to the entire app */}
+        <CurrentLoginUser.Provider value={{ currentUser, setCurrentUser }}>
+          <AppContent navHeight={navHeight} cartItems={cartItems} setCartItems={setCartItems} />
+        </CurrentLoginUser.Provider>
       </BrowserRouter>
     </div>
   );
 }
 
 function AppContent({ navHeight, cartItems, setCartItems }) {
-  const location = useLocation(); // Move useLocation here
+  const location = useLocation();
   const hideNavBarRoutes = ['/login', '/signup', '/forgetpw'];
 
   return (
-    <>
+    <div>
       {!hideNavBarRoutes.includes(location.pathname) && <NavBar />}
       <CartContext.Provider value={{ cartItems, setCartItems }}>
         <div style={{ marginTop: `${navHeight}px`, overflowY: 'auto', overflowX: 'auto' }}>
           <Routes>
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgetpw" element={<ForgetPasswordPage />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Home />} />
             <Route
               path="/profile"
               element={
@@ -83,7 +89,7 @@ function AppContent({ navHeight, cartItems, setCartItems }) {
           </Routes>
         </div>
       </CartContext.Provider>
-    </>
+    </div>
   );
 }
 
