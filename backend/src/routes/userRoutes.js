@@ -10,7 +10,7 @@ const {
 
 router.post('/login', LoginUser);
 router.post('/register', RegisterUser);
-router.put('/forget-password/:userID', ForgetPassword);
+router.put('/forget-password/', ForgetPassword);
 router.get('/search/:userName', getUserByUsername);
 
 module.exports = router;

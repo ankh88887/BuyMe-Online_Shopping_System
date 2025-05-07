@@ -31,7 +31,7 @@ export default function ForgetPasswordPage() {
       const response = await fetch('http://localhost:5005/api/users/forget-password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName, email, password }),
+        body: JSON.stringify({ userName, email, password, confirmPassword }),
       });
 
       if (response.ok) {
