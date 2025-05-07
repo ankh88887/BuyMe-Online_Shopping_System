@@ -35,11 +35,22 @@ export default function ForgetPasswordPage() {
       });
 
       if (response.ok) {
-        alert('Password updated successfully!');
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          alert(data.message || 'Password updated successfully!');
+        } else {
+          alert('Password updated successfully!');
+        }
         navigate('/login'); // Redirect to the login page
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Failed to update password');
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to update password');
+        } else {
+          alert('Failed to update password');
+        }
       }
     } catch (error) {
       console.error('Error:', error);

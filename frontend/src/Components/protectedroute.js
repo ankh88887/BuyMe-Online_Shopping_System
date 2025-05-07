@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-export default function ProtectedRoute({ children, isAdmin }) {
+export default function ProtectedRoute({ children }) {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   if (!currentUser) {
@@ -9,10 +9,6 @@ export default function ProtectedRoute({ children, isAdmin }) {
     return <Navigate to="/login" />;
   }
 
-  if (isAdmin && !currentUser.isAdmin) {
-    // Redirect to home if the user is not an admin
-    return <Navigate to="/" />;
-  }
-
+  // Allow access if the user is logged in
   return children;
 }
