@@ -1,373 +1,326 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from "react";
+import { CurrentLoginUser } from "./CurrentLoginUser";
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './UserProfilePage.css';
 
-const UserProfile = () => {
+const UserProfilePage = () => {
+  const { currentUser } = useContext(CurrentLoginUser);
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({
-    username: '',
-    email: '',
-    address: '',
-    cardName: '',
-    cardNumber: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: ''
+  const [userProfile, setUserProfile] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState({});
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardName: "",
+    cardNumber: "",
+    expiryMonth: "",
+    expiryYear: "",
+    cvv: ""
   });
-  
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [tempData, setTempData] = useState({...userData});
-  const [showCardNumber, setShowCardNumber] = useState(false);
   const [showCVV, setShowCVV] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState('');
-  const [updateStatus, setUpdateStatus] = useState('');
 
   useEffect(() => {
-    // Reset visibility states when not in edit mode
-    if (!editMode) {
-      setShowCardNumber(false);
-      setShowCVV(false);
+    // Fetch user profile data when component mounts
+    if (currentUser) {
+      fetchUserProfile();
+    } else {
+      // Redirect to login if no user is logged in
+      navigate('/login');
     }
-  }, [editMode]);
+  }, [currentUser, navigate]);
 
-  useEffect(() => {
-    // Fetch user data from API
-    // const fetchUserData = async () => {
-    //   setLoading(true);
-    //   try {
-    //     const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile`, {
-    //       headers: {
-    //         'Authorization': 'Bearer ' + localStorage.getItem('token')
-    //       }
-    //     });
-        
-    //     const data = await response.json();
-        
-    //     if (data.success) {
-    //       setUserData(data.user);
-    //       setTempData(data.user);
-    //       setError(null);
-    //     } else {
-    //       setError(data.message || 'Failed to load profile');
-    //       if (response.status === 401) {
-    //         // Unauthorized - redirect to login
-    //         localStorage.removeItem('token');
-    //         navigate('/login');
-    //       }
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching user data:', error);
-    //     setError('Network error. Please try again later.');
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-  const fetchUserData = async () => {
-    setLoading(true); // Set loading to true at the start
+  const fetchUserProfile = async () => {
     try {
-      // Get the userID from localStorage
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userID = user?.userID || "1"; // Default to 1 if not found
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile/${userID}`, {
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
-        }
-      });
+      // Use the API endpoint from your routes with fetch
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile/${currentUser.userID}`);
       const data = await response.json();
+      
       if (data.success) {
-        setUserData(data.user);
-        setTempData(data.user);
-        setError(null);
+        const userData = data.user;
+        setUserProfile(userData);
+        setEditedProfile(userData);
+        
+        // Set payment info
+        setPaymentInfo({
+          cardName: userData.cardName || "",
+          cardNumber: userData.cardNumber || "",
+          expiryMonth: userData.expiryMonth || "",
+          expiryYear: userData.expiryYear || "",
+          cvv: userData.cvv || ""
+        });
       } else {
-        setError(data.message || 'Failed to load profile');
+        setError("Failed to load user profile: " + data.message);
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setError('Network error. Please try again later.');
-    } finally {
-      setLoading(false); // Set loading to false when done, whether successful or not
+    } catch (err) {
+      setError("Failed to load user profile. Please try again later.");
+      console.error("Error fetching user profile:", err);
     }
   };
-  
-    fetchUserData();
-  }, [navigate]);
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    if (!isEditing) {
+      setEditedProfile({ ...userProfile });
+      setPaymentInfo({
+        cardName: userProfile.cardName || "",
+        cardNumber: userProfile.cardNumber || "",
+        expiryMonth: userProfile.expiryMonth || "",
+        expiryYear: userProfile.expiryYear || "",
+        cvv: userProfile.cvv || ""
+      });
+    }
+    // Clear any previous messages
+    setError("");
+    setSuccess("");
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setTempData({...tempData, [name]: value});
+    setEditedProfile({
+      ...editedProfile,
+      [name]: value,
+    });
   };
 
-  const handleSaveChanges = async () => {
+  const handlePaymentChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentInfo({
+      ...paymentInfo,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      setUpdateStatus('');
-      setUpdateMessage('');
-      
+      // Combine profile and payment data for submission
+      const profileData = {
+        userID: currentUser.userID,
+        username: editedProfile.username,
+        email: editedProfile.email,
+        address: editedProfile.address,
+        ...paymentInfo
+      };
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
         },
-        body: JSON.stringify(tempData)
+        body: JSON.stringify(profileData),
       });
-
-      // Log the full response for debugging
-      console.log("Response status:", response.status);
+      
       const data = await response.json();
-      console.log("Response data:", data);
       
       if (data.success) {
-        setUserData(tempData);
-        setEditMode(false);
-        setUpdateStatus('success');
-        setUpdateMessage('Profile updated successfully!');
+        // Refresh user data after successful update
+        fetchUserProfile();
+        setIsEditing(false);
+        setSuccess("Profile updated successfully!");
       } else {
-        setUpdateStatus('error');
-        setUpdateMessage(data.message || 'Failed to update profile');
+        setError("Failed to update profile: " + data.message);
       }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      setUpdateStatus('error');
-      setUpdateMessage('Network error. Please try again later.');
+    } catch (err) {
+      setError("Failed to update profile. Please try again.");
+      console.error("Error updating profile:", err);
     }
   };
 
-  const handleCancel = () => {
-    setTempData({...userData});
-    setEditMode(false);
-  };
-
-  const toggleCardNumberVisibility = () => {
-    setShowCardNumber(!showCardNumber);
-  };
-
-  const toggleCVVVisibility = () => {
-    setShowCVV(!showCVV);
-  };
-
-  const formatCardNumber = (number) => {
-    if (!number) return '';
-    if (showCardNumber) {
-      return number.replace(/(\d{4})/g, '$1 ').trim();
-    }
-    return '•••• •••• •••• ' + number.slice(-4);
-  };
-
-  const formatCVV = (cvv) => {
-    if (!cvv) return '';
-    return showCVV ? cvv : '•••';
-  };
-
-  if (loading) {
-    return <div className="loading">Loading profile...</div>;
-  }
-
-  if (error) {
-    return <div className="error-message">{error}</div>;
+  if (!userProfile) {
+    return (
+      <div className="container mt-5">
+        <p>Loading profile information...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="profile-background">
-      <div className="user-profile-container">
-        <div className="profile-header">
-          <img 
-            src="/path-to-user-icon.png"
-            alt="User Icon" 
-            className="user-icon"
-          />
-          <h1>{userData.username}</h1>
-        </div>
-        
-        {updateMessage && (
-          <div className={`update-message ${updateStatus}`}>
-            {updateMessage}
-          </div>
-        )}
-        
-        <div className="profile-section">
-          <h3>User Information</h3>
-          
-          <div className="form-group">
-            <label>Username</label>
-            {editMode ? (
-              <input
-                type="text"
-                name="username"
-                value={tempData.username}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <div className="info-display">{userData.username}</div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Email</label>
-            {editMode ? (
-              <input
-                type="email"
-                name="email"
-                value={tempData.email}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <div className="info-display">{userData.email}</div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Address</label>
-            {editMode ? (
-              <input
-                type="text"
-                name="address"
-                value={tempData.address}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <div className="info-display">{userData.address || 'Not provided'}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="profile-section">
-          <h3>Payment Method</h3>
-          
-          <div className="form-group">
-            <label>Card holder's name</label>
-            {editMode ? (
-              <input
-                type="text"
-                name="cardName"
-                value={tempData.cardName}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <div className="info-display">{userData.cardName || 'Not provided'}</div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Card No.</label>
-            <div className="input-with-icon">
-              {editMode ? (
-                <input
-                  type={showCardNumber ? "text" : "password"}
-                  name="cardNumber"
-                  value={tempData.cardNumber}
-                  onChange={handleInputChange}
-                  placeholder="1234 5678 9012 3456"
-                />
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-8">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h3>User Profile</h3>
+              {!isEditing ? (
+                <button className="btn btn-primary" onClick={handleEditToggle}>
+                  <FaEdit /> Edit Profile
+                </button>
               ) : (
-                <div className="info-display">
-                  {userData.cardNumber ? formatCardNumber(userData.cardNumber) : 'Not provided'}
-                </div>
-              )}
-              {(editMode || userData.cardNumber) && (
-                <button 
-                  type="button" 
-                  className="eye-icon"
-                  onClick={toggleCardNumberVisibility}
-                >
-                  {showCardNumber ? <FaEyeSlash /> : <FaEye />}
+                <button className="btn btn-secondary" onClick={handleEditToggle}>
+                  <FaTimes /> Cancel
                 </button>
               )}
             </div>
-          </div>
+            <div className="card-body">
+              {error && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">{success}</div>}
 
-          <div className="form-row-1">
-            <div className="form-group">
-              <label>Expiry date</label>
-              {editMode ? (
-                <div className="expiry-inputs">
-                  <input
-                    type="text"
-                    name="expiryMonth"
-                    value={tempData.expiryMonth}
-                    onChange={handleInputChange}
-                    placeholder="MM"
-                    maxLength="2"
-                  />
-                  <span>/</span>
-                  <input
-                    type="text"
-                    name="expiryYear"
-                    value={tempData.expiryYear}
-                    onChange={handleInputChange}
-                    placeholder="YY"
-                    maxLength="2"
-                  />
+              {!isEditing ? (
+                <div>
+                  <div className="row mb-3">
+                    <div className="col-md-4 fw-bold">User ID:</div>
+                    <div className="col-md-8">{userProfile.userID}</div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-4 fw-bold">Username:</div>
+                    <div className="col-md-8">{userProfile.username}</div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-4 fw-bold">Email:</div>
+                    <div className="col-md-8">{userProfile.email}</div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-4 fw-bold">Address:</div>
+                    <div className="col-md-8">{userProfile.address || "No address provided"}</div>
+                  </div>
+                  
+                  <h4 className="mt-4">Payment Information</h4>
+                  {userProfile.cardNumber ? (
+                    <>
+                      <div className="row mb-3">
+                        <div className="col-md-4 fw-bold">Card Holder:</div>
+                        <div className="col-md-8">{userProfile.cardName}</div>
+                      </div>
+                      <div className="row mb-3">
+                        <div className="col-md-4 fw-bold">Card Number:</div>
+                        <div className="col-md-8">**** **** **** {userProfile.cardNumber.slice(-4)}</div>
+                      </div>
+                      <div className="row mb-3">
+                        <div className="col-md-4 fw-bold">Expiry Date:</div>
+                        <div className="col-md-8">{userProfile.expiryMonth}/{userProfile.expiryYear}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <p>No payment information saved.</p>
+                  )}
                 </div>
               ) : (
-                <div className="info-display">
-                  {userData.expiryMonth && userData.expiryYear ? 
-                    `${userData.expiryMonth}/${userData.expiryYear}` : 
-                    'Not provided'}
-                </div>
+                <form onSubmit={handleSubmit}>
+                  <h4>Personal Information</h4>
+                  <div className="mb-3">
+                    <label htmlFor="username" className="form-label">Username</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="username"
+                      name="username"
+                      value={editedProfile.username || ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="email"
+                      name="email"
+                      value={editedProfile.email || ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="address" className="form-label">Address</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="address"
+                      name="address"
+                      value={editedProfile.address || ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <h4 className="mt-4">Payment Information</h4>
+                  <div className="mb-3">
+                    <label htmlFor="cardName" className="form-label">Card Holder Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="cardName"
+                      name="cardName"
+                      value={paymentInfo.cardName}
+                      onChange={handlePaymentChange}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="cardNumber" className="form-label">Card Number</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="cardNumber"
+                      name="cardNumber"
+                      value={paymentInfo.cardNumber}
+                      onChange={handlePaymentChange}
+                      placeholder="1234 5678 9012 3456"
+                    />
+                  </div>
+
+                  <div className="row mb-3">
+                    <div className="col-md-6">
+                      <label htmlFor="expiryMonth" className="form-label">Expiry Month</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="expiryMonth"
+                        name="expiryMonth"
+                        value={paymentInfo.expiryMonth}
+                        onChange={handlePaymentChange}
+                        placeholder="MM"
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label htmlFor="expiryYear" className="form-label">Expiry Year</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="expiryYear"
+                        name="expiryYear"
+                        value={paymentInfo.expiryYear}
+                        onChange={handlePaymentChange}
+                        placeholder="YY"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="cvv" className="form-label">CVV</label>
+                    <div className="input-group">
+                      <input
+                        type={showCVV ? "text" : "password"}
+                        className="form-control"
+                        id="cvv"
+                        name="cvv"
+                        value={paymentInfo.cvv}
+                        onChange={handlePaymentChange}
+                        placeholder="123"
+                      />
+                      <button 
+                        type="button" 
+                        className="btn btn-outline-secondary"
+                        onClick={() => setShowCVV(!showCVV)}
+                      >
+                        {showCVV ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn btn-success mt-3">
+                    <FaSave /> Save Changes
+                  </button>
+                </form>
               )}
             </div>
-
-            <div className="form-group">
-              <label>CVV</label>
-              <div className="input-with-icon">
-                {editMode ? (
-                  <input
-                    type={showCVV ? "text" : "password"}
-                    name="cvv"
-                    value={tempData.cvv}
-                    onChange={handleInputChange}
-                    maxLength="3"
-                  />
-                ) : (
-                  <div className="info-display">
-                    {userData.cvv ? formatCVV(userData.cvv) : 'Not provided'}
-                  </div>
-                )}
-                {(editMode || userData.cvv) && (
-                  <button 
-                    type="button" 
-                    className="eye-icon"
-                    onClick={toggleCVVVisibility}
-                  >
-                    {showCVV ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                )}
-              </div>
-            </div>
           </div>
-        </div>
-
-        <div className="profile-actions">
-          {editMode ? (
-            <>
-              <button className="btn-cancel" onClick={handleCancel}>
-                Cancel
-              </button>
-              <button className="btn-save" onClick={handleSaveChanges}>
-                Save Changes
-              </button>
-            </>
-          ) : (
-            <button className="btn-edit" onClick={() => setEditMode(true)}>
-              Edit Profile
-            </button>
-          )}
-          
-          <button 
-            className="btn-password" 
-            onClick={() => navigate('/reset-password')}
-          >
-            Set a new password
-          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default UserProfile;
+export default UserProfilePage;
