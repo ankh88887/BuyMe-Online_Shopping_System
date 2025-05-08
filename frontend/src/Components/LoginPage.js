@@ -24,6 +24,7 @@ export default function Login() {
 
         setCurrentUser(user);
         console.log('Current User:', user); 
+        console.log('Current User in user variable:', currentUser); 
         console.log('User ID:', user.userID); 
         navigate('/');
       } else {

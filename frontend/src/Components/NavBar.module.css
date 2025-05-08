@@ -12,6 +12,8 @@ nav {
     overflow-x: auto; /* Enable horizontal scrolling */
     overflow-y: hidden; /* Disable vertical scrolling */
     white-space: nowrap; /* Prevent wrapping of content */
+    position: fixed;
+    z-index: 1000; /* Ensure it stays on top of other content */
 }
 
 .left, .middle, .right {

@@ -10,19 +10,6 @@ const connectDB = async () => {
     })
       .then(async () => {
         console.log('MongoDB Connected');
-
-        // Get the database object
-        const db = mongoose.connection.db;
-
-        // List all collections in the database
-        const collections = await db.listCollections().toArray();
-        console.log('Collections in the database:', collections.map(col => col.name));
-
-        // Print all data for each collection
-        for (const collection of collections) {
-          const data = await db.collection(collection.name).find({}).toArray();
-          console.log(`Data in collection "${collection.name}":`, data);
-        }
       })
       .catch(err => {
         console.error('Database connection error:', err);
