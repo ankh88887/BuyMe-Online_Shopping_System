@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import NavBar from './NavBar';
+import NavBar from '../Components/NavBar';
 import styles from './ShoppingCart.module.css';
+import { CurrentLoginUser } from '../Components/CurrentLoginUser';
 
-const API_BASE_URL = 'http://localhost:5005';
+const API_BASE_URL = 'http://localhost:5005/api';
 
 const ShoppingCart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
-    const userID = localStorage.getItem('userID') || 'user123';
+    const { currentUser } = useContext(CurrentLoginUser);
+    
+    const userID = currentUser?.userID;
 
     const fetchCartAndProducts = async () => {
+        if (!userID) {
+            navigate('/login');
+            return;
+        }
         setLoading(true);
         try {
             const cartResponse = await axios.get(`${API_BASE_URL}/carts/active/${userID}`);
@@ -45,13 +51,14 @@ const ShoppingCart = () => {
     };
 
     useEffect(() => {
+        console.log('ShoppingCart - currentUser:', currentUser);
+        console.log('ShoppingCart - userID:', userID);
         fetchCartAndProducts();
-    }, [userID]);
+    }, [userID, navigate]);
 
     const handleQuantityChange = async (id, delta) => {
         let newItems;
         if (delta < 0 && cartItems.find(item => item.id === id).quantity === 1) {
-            // Remove item if quantity would go below 1
             newItems = cartItems.filter(item => item.id !== id);
         } else {
             newItems = cartItems.map(item =>
@@ -70,7 +77,7 @@ const ShoppingCart = () => {
             await axios.put(`${API_BASE_URL}/carts/${userID}`, { items: itemsMap });
         } catch (error) {
             console.error('Error updating cart:', error);
-            fetchCartAndProducts();
+            fetchCartAndProducts(); // Now accessible
         }
     };
 
@@ -92,7 +99,7 @@ const ShoppingCart = () => {
                 await axios.put(`${API_BASE_URL}/carts/${userID}`, { items: itemsMap });
             } catch (error) {
                 console.error('Error updating cart:', error);
-                fetchCartAndProducts();
+                fetchCartAndProducts(); // Now accessible
             }
         } else if (newQuantity === 0) {
             const newItems = cartItems.filter(item => item.id !== id);
@@ -106,7 +113,7 @@ const ShoppingCart = () => {
                 await axios.put(`${API_BASE_URL}/carts/${userID}`, { items: itemsMap });
             } catch (error) {
                 console.error('Error updating cart:', error);
-                fetchCartAndProducts();
+                fetchCartAndProducts(); // Now accessible
             }
         }
     };
@@ -132,7 +139,7 @@ const ShoppingCart = () => {
             <NavBar />
             <div className={styles.cartContainer}>
                 <div className={styles.cartHeader}>
-                    <h1> shopping cart list</h1>
+                    <h1>Shopping Cart List</h1>
                 </div>
                 <div className={styles.cartSection}>
                     <table>
@@ -153,7 +160,7 @@ const ShoppingCart = () => {
                                     <tr key={item.id}>
                                         <td>{item.name}</td>
                                         <td>
-                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
                                                 <button
                                                     className={item.quantity === 1 ? styles.BtnDisable : styles.BtnAble}
                                                     onClick={() => handleQuantityChange(item.id, -1)}

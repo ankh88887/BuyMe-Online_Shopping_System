@@ -75,6 +75,12 @@
     box-sizing: border-box;
 }
 
+.formInput[readonly] {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    color: #333;
+}
+
 .expiryGroup {
     display: flex;
     gap: 10px;
@@ -85,7 +91,42 @@
     gap: 10px;
 }
 
-.btnEdit,
+.btnEdit {
+    background-color: #1c3455;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btnEdit:hover {
+    background-color: #142a47;
+}
+
+.btnEdit:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.btnProfile {
+    background-color: #2a4d7a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btnProfile:hover {
+    background-color: #1e3b5c;
+}
+
 .btnSave,
 .btnCancel,
 .btnConfirm {
@@ -98,7 +139,6 @@
     font-weight: bold;
 }
 
-.btnEdit:hover,
 .btnSave:hover,
 .btnConfirm:hover {
     background-color: #142a47;
@@ -113,7 +153,6 @@
     background-color: #b3b3b3;
 }
 
-.btnEdit:disabled,
 .btnConfirm:disabled {
     background-color: #cccccc;
     color: #666666;
@@ -155,6 +194,7 @@
     }
 
     .btnEdit,
+    .btnProfile,
     .btnSave,
     .btnCancel,
     .btnConfirm {

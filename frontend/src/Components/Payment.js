@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
 import styles from './Payment.module.css';
+import { CurrentLoginUser } from './CurrentLoginUser';
 
-const API_BASE_URL = 'http://localhost:5005';
+const API_BASE_URL = 'http://localhost:5005/api';
 
 const PaymentPage = () => {
     const [personalInfo, setPersonalInfo] = useState({
         userName: '',
         address: '',
         email: '',
-        phone: '',
     });
     const [cardInfo, setCardInfo] = useState({
         CardOwner: '',
@@ -20,33 +20,34 @@ const PaymentPage = () => {
         CVV: '',
         isEditable: true,
     });
-    const [editPersonalMode, setEditPersonalMode] = useState(false);
     const [editCardMode, setEditCardMode] = useState(false);
-    const [tempPersonalInfo, setTempPersonalInfo] = useState({ ...personalInfo });
     const [tempCardInfo, setTempCardInfo] = useState({ ...cardInfo });
     const location = useLocation();
     const navigate = useNavigate();
     const totalCost = location.state?.totalCost || '1500.00';
     const items = location.state?.items || new Map();
-
-    const userID = localStorage.getItem('userID') || 'user123';
+    
+    const { currentUser } = useContext(CurrentLoginUser);
+    const userID = currentUser?.userID;
 
     useEffect(() => {
+        console.log('Payment - currentUser:', currentUser);
+        console.log('Payment - userID:', userID);
+
+        if (!userID) {
+            navigate('/login');
+            return;
+        }
+
         const fetchUserInfo = async () => {
             try {
                 const response = await axios.get(`${API_BASE_URL}/users/${userID}`);
                 const user = response.data;
+                console.log('Payment - Fetched user info:', user);
                 setPersonalInfo({
                     userName: user.userName || '',
                     address: user.address || '',
                     email: user.email || '',
-                    phone: user.phone || '',
-                });
-                setTempPersonalInfo({
-                    userName: user.userName || '',
-                    address: user.address || '',
-                    email: user.email || '',
-                    phone: user.phone || '',
                 });
             } catch (error) {
                 console.error('Error fetching user info:', error);
@@ -57,6 +58,7 @@ const PaymentPage = () => {
             try {
                 const response = await axios.get(`${API_BASE_URL}/payments/${userID}`);
                 const payment = response.data;
+                console.log('Payment - Fetched payment info:', payment);
                 setCardInfo({
                     CardOwner: payment.CardOwner || '',
                     CDNo: payment.CDNo ? payment.CDNo.toString() : '',
@@ -78,37 +80,11 @@ const PaymentPage = () => {
 
         fetchUserInfo();
         fetchPaymentInfo();
-    }, [userID]);
-
-    const handlePersonalInputChange = (e) => {
-        const { name, value } = e.target;
-        setTempPersonalInfo(prev => ({ ...prev, [name]: value }));
-    };
+    }, [userID, navigate]);
 
     const handleCardInputChange = (e) => {
         const { name, value } = e.target;
         setTempCardInfo(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSavePersonalChanges = async () => {
-        try {
-            const response = await axios.put(`${API_BASE_URL}/users/${userID}`, {
-                userName: tempPersonalInfo.userName,
-                email: tempPersonalInfo.email,
-                address: tempPersonalInfo.address,
-                phone: tempPersonalInfo.phone,
-            });
-            setPersonalInfo({ ...tempPersonalInfo });
-            setEditPersonalMode(false);
-        } catch (error) {
-            console.error('Error updating user info:', error);
-            alert('Failed to update personal information');
-        }
-    };
-
-    const handleCancelPersonalEdit = () => {
-        setTempPersonalInfo({ ...personalInfo });
-        setEditPersonalMode(false);
     };
 
     const handleSaveCardChanges = async () => {
@@ -141,6 +117,7 @@ const PaymentPage = () => {
             });
             setCardInfo({ ...tempCardInfo });
             setEditCardMode(false);
+            console.log('Payment - Updated card info:', tempCardInfo);
         } catch (error) {
             console.error('Error updating payment info:', error);
             alert('Failed to update payment information');
@@ -159,18 +136,28 @@ const PaymentPage = () => {
     };
 
     const isFormValid = () => {
-        const requiredPersonalFields = ['userName', 'address', 'email'];
+        const requiredPersonalFields = ['userName', 'email'];
         const requiredCardFields = ['CardOwner', 'CDNo', 'expiryDate', 'CVV'];
 
-        const isPersonalValid = requiredPersonalFields.every(field => personalInfo[field] && personalInfo[field].trim() !== '');
-        const isCardValid = requiredCardFields.every(field => cardInfo[field] && cardInfo[field].trim() !== '');
+        const isPersonalValid = requiredPersonalFields.every(field => {
+            const isValid = personalInfo[field] && personalInfo[field].trim() !== '';
+            console.log(`Payment - Personal field ${field}: ${personalInfo[field]} (Valid: ${isValid})`);
+            return isValid;
+        });
+        const isCardValid = requiredCardFields.every(field => {
+            const isValid = cardInfo[field] && cardInfo[field].trim() !== '';
+            console.log(`Payment - Card field ${field}: ${cardInfo[field]} (Valid: ${isValid})`);
+            return isValid;
+        });
 
+        console.log('Payment - isPersonalValid:', isPersonalValid);
+        console.log('Payment - isCardValid:', isCardValid);
         return isPersonalValid && isCardValid;
     };
 
     const handleConfirmPayment = async () => {
         if (!isFormValid()) {
-            alert('Please fill in all required fields before confirming payment.');
+            alert('Please fill in all required fields (username, email, and card details) before confirming payment.');
             return;
         }
 
@@ -207,102 +194,51 @@ const PaymentPage = () => {
             <NavBar />
             <div className={styles.paymentContainer}>
                 <div className={styles.paymentHeader}>
-                    <h1>(1800 x 820) Payment Info.</h1>
+                    <h1>Payment Info</h1>
                 </div>
                 <div className={styles.paymentSection}>
                     <div className={styles.infoGroup}>
-                        <h3>Personal Info.</h3>
+                        <h3>Personal Info</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Username *</label>
-                                {editPersonalMode ? (
-                                    <input
-                                        type="text"
-                                        name="userName"
-                                        value={tempPersonalInfo.userName}
-                                        onChange={handlePersonalInputChange}
-                                        className={styles.formInput}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={personalInfo.userName}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
+                                <input
+                                    type="text"
+                                    value={personalInfo.userName}
+                                    className={styles.formInput}
+                                    readOnly
+                                />
                             </div>
                             <div className={styles.formGroup}>
-                                <label>Address *</label>
-                                {editPersonalMode ? (
-                                    <input
-                                        type="text"
-                                        name="address"
-                                        value={tempPersonalInfo.address}
-                                        onChange={handlePersonalInputChange}
-                                        className={styles.formInput}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={personalInfo.address}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
+                                <label>Address</label>
+                                <input
+                                    type="text"
+                                    value={personalInfo.address}
+                                    className={styles.formInput}
+                                    readOnly
+                                />
                             </div>
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Email *</label>
-                                {editPersonalMode ? (
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={tempPersonalInfo.email}
-                                        onChange={handlePersonalInputChange}
-                                        className={styles.formInput}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={personalInfo.email}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label>Phone number</label>
-                                {editPersonalMode ? (
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={tempPersonalInfo.phone}
-                                        onChange={handlePersonalInputChange}
-                                        className={styles.formInput}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={personalInfo.phone}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
+                                <input
+                                    type="text"
+                                    value={personalInfo.email}
+                                    className={styles.formInput}
+                                    readOnly
+                                />
                             </div>
                         </div>
-                        {editPersonalMode ? (
-                            <div className={styles.actionButtons}>
-                                <button className={styles.btnCancel} onClick={handleCancelPersonalEdit}>Cancel</button>
-                                <button className={styles.btnSave} onClick={handleSavePersonalChanges}>Save</button>
-                            </div>
-                        ) : (
-                            <button className={styles.btnEdit} onClick={() => setEditPersonalMode(true)}>Edit</button>
-                        )}
+                        <button
+                            className={styles.btnProfile}
+                            onClick={() => navigate('/profile')}
+                        >
+                            Edit Profile
+                        </button>
                     </div>
                     <div className={styles.infoGroup}>
-                        <h3>Card Info.</h3>
+                        <h3>Card Info</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Card holder's name *</label>

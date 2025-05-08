@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
 import styles from './PurchaseHistory.module.css';
+import { CurrentLoginUser } from './CurrentLoginUser';
 
-const API_BASE_URL = 'http://localhost:5005';
+const API_BASE_URL = 'http://localhost:5005/api';
 
 const PurchaseHistory = () => {
     const [purchases, setPurchases] = useState([]);
@@ -12,10 +14,18 @@ const PurchaseHistory = () => {
     const [ratings, setRatings] = useState({});
     const [comments, setComments] = useState({});
     const [reviewExists, setReviewExists] = useState({});
-
-    const userID = localStorage.getItem('userID') || 'testUser123';
+    
+    const navigate = useNavigate();
+    const { currentUser } = useContext(CurrentLoginUser);
+    
+    const userID = currentUser?.userID;
 
     useEffect(() => {
+        if (!userID) {
+            navigate('/login');
+            return;
+        }
+
         const fetchPurchaseHistory = async () => {
             setLoading(true);
             setError(null);
@@ -51,7 +61,7 @@ const PurchaseHistory = () => {
             }
         };
         fetchPurchaseHistory();
-    }, [userID]);
+    }, [userID, navigate]);
 
     const handleRatingChange = (orderID, productID, value) => {
         setRatings(prev => ({
