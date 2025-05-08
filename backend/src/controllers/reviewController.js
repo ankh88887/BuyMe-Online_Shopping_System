@@ -53,7 +53,7 @@ exports.getReviewsByProductsId = async (req, res) => {
     }
 };const Review = require('../models/Review');
 
-exports.checkReview = async (req, res) => {
+exports.checkReviewByUserID = async (req, res) => {
     try {
         const { userID, productID } = req.query;
         const existingReview = await Review.findOne({ userID, ProductID: productID });

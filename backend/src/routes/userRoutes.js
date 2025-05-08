@@ -7,8 +7,7 @@ const {
   ForgetPassword,
   getUserByUsername,
   getUsers,
-  getUserById,,
-  getUserById
+  getUserById,
 } = require('../controllers/userController');
 
 router.post('/login', LoginUser);

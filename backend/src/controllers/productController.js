@@ -1,17 +1,5 @@
 const Product = require('../models/Product');
 
-exports.getProductById = async (req, res) => {
-    try {
-        const product = await Product.findOne({ productID: req.params.productId });
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-        res.json(product);
-    } catch (error) {
-        console.error('Error fetching product:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-};
 
 exports.updateProduct = async (req, res) => {
     try {
@@ -55,7 +43,7 @@ exports.createProduct = async (req, res) => {
         console.error('Error creating product:', error);
         res.status(500).json({ error: 'Server error' });
     }
-};const Product = require('../models/Product');
+};
 
 function ProductConstructor(product) {
   return {
