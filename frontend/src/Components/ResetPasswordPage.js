@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import { CurrentLoginUser } from "./CurrentLoginUser";
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
+import "./ResetPasswordPage.css";
 
 const ResetPasswordPage = () => {
   const { currentUser } = useContext(CurrentLoginUser);
@@ -106,8 +107,8 @@ const ResetPasswordPage = () => {
 
   if (!currentUser) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-warning">
+      <div className="reset-password-unique-container mt-5">
+        <div className="reset-password-unique-alert-warning">
           Please log in to change your password.
         </div>
       </div>
@@ -115,25 +116,25 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <div className="container mt-5">
+    <div className="reset-password-unique-container mt-5">
       <div className="row justify-content-center">
         <div className="col-md-6">
-          <div className="card">
-            <div className="card-header d-flex align-items-center">
-              <FaLock className="me-2" />
-              <h3 className="mb-0">Reset Password</h3>
+          <div className="reset-password-unique-card">
+            <div className="reset-password-unique-header d-flex align-items-center">
+              <FaLock className="reset-password-unique-icon me-2" />
+              <h3 className="reset-password-unique-title mb-0">Reset Password</h3>
             </div>
-            <div className="card-body">
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
+            <div className="reset-password-unique-body">
+              {error && <div className="reset-password-unique-alert-danger">{error}</div>}
+              {success && <div className="reset-password-unique-alert-success">{success}</div>}
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label htmlFor="oldPassword" className="form-label">Current Password</label>
+                  <label htmlFor="oldPassword" className="reset-password-unique-form-label">Current Password</label>
                   <div className="input-group">
                     <input
                       type={showOldPassword ? "text" : "password"}
-                      className="form-control"
+                      className="reset-password-unique-form-control-password"
                       id="oldPassword"
                       name="oldPassword"
                       value={formData.oldPassword}
@@ -142,7 +143,7 @@ const ResetPasswordPage = () => {
                     />
                     <button 
                       type="button" 
-                      className="btn btn-outline-secondary"
+                      className="reset-password-unique-btn btn-outline-secondary"
                       onClick={() => setShowOldPassword(!showOldPassword)}
                     >
                       {showOldPassword ? <FaEyeSlash /> : <FaEye />}
@@ -151,11 +152,11 @@ const ResetPasswordPage = () => {
                 </div>
                 
                 <div className="mb-3">
-                  <label htmlFor="newPassword" className="form-label">New Password</label>
+                  <label htmlFor="newPassword" className="reset-password-unique-form-label">New Password</label>
                   <div className="input-group">
                     <input
                       type={showNewPassword ? "text" : "password"}
-                      className="form-control"
+                      className="reset-password-unique-form-control-password"
                       id="newPassword"
                       name="newPassword"
                       value={formData.newPassword}
@@ -164,23 +165,23 @@ const ResetPasswordPage = () => {
                     />
                     <button 
                       type="button" 
-                      className="btn btn-outline-secondary"
+                      className="reset-password-unique-btn btn-outline-secondary"
                       onClick={() => setShowNewPassword(!showNewPassword)}
                     >
                       {showNewPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
-                  <small className="form-text text-muted">
+                  <small className="reset-password-unique-form-text text-muted">
                     Password must be at least 8 characters long and contain both letters and numbers.
                   </small>
                 </div>
                 
                 <div className="mb-3">
-                  <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
+                  <label htmlFor="confirmPassword" className="reset-password-unique-form-label">Confirm New Password</label>
                   <div className="input-group">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
-                      className="form-control"
+                      className="reset-password-unique-form-control-password"
                       id="confirmPassword"
                       name="confirmPassword"
                       value={formData.confirmPassword}
@@ -189,7 +190,7 @@ const ResetPasswordPage = () => {
                     />
                     <button 
                       type="button" 
-                      className="btn btn-outline-secondary"
+                      className="reset-password-unique-btn btn-outline-secondary"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -200,14 +201,14 @@ const ResetPasswordPage = () => {
                 <div className="d-grid gap-2">
                   <button 
                     type="submit" 
-                    className="btn btn-primary" 
+                    className="reset-password-unique-btn-primary" 
                     disabled={loading}
                   >
                     {loading ? "Changing Password..." : "Change Password"}
                   </button>
                   <button 
                     type="button" 
-                    className="btn btn-secondary"
+                    className="reset-password-unique-btn-secondary"
                     onClick={() => navigate('/profile')}
                   >
                     Cancel

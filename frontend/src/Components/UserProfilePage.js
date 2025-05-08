@@ -3,6 +3,7 @@ import { CurrentLoginUser } from "./CurrentLoginUser";
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import userIcon from '../Images/user_icon.png'; // Make sure this path is correct
+import "./UserProfilePage.css"; // Import your CSS file for styling
 
 const UserProfilePage = () => {
   const { currentUser } = useContext(CurrentLoginUser);
@@ -289,69 +290,70 @@ const UserProfilePage = () => {
 
   if (!userProfile) {
     return (
-      <div className="container mt-5">
+      <div className="user-profile-unique-container">
         <p>Loading profile information...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mt-5">
+    <div className="user-profile-unique-container">
       <div className="row justify-content-center">
         <div className="col-md-8">
-          <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
+          <div className="user-profile-unique-card">
+            <div className="user-profile-unique-header">
               <div className="d-flex align-items-center">
                 <img 
                   src={userIcon} 
                   alt="User Icon" 
-                  style={{ width: '30px', height: '30px', marginRight: '10px' }} 
+                  className="user-profile-unique-icon"
                 />
-                <h3 className="mb-0">User Profile</h3>
+                <h3 className="user-profile-unique-title">User Profile</h3>
               </div>
               {!isEditing ? (
-                <button className="btn btn-primary" onClick={handleEditToggle}>
-                  <FaEdit /> Edit Profile
+                <button className="user-profile-unique-btn-primary" onClick={handleEditToggle}>
+                  <FaEdit className="me-2" /> Edit Profile
                 </button>
               ) : (
-                <button className="btn btn-secondary" onClick={handleEditToggle}>
-                  <FaTimes /> Cancel
+                <button className="user-profile-unique-btn-secondary" onClick={handleEditToggle}>
+                  <FaTimes className="me-2" /> Cancel
                 </button>
               )}
             </div>
-            <div className="card-body">
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
+            <div className="user-profile-unique-body">
+              {error && <div className="user-profile-unique-alert-danger">{error}</div>}
+              {success && <div className="user-profile-unique-alert-success">{success}</div>}
 
               {!isEditing ? (
                 <div>
                   <div className="row mb-3">
-                    <div className="col-md-4 fw-bold">Username:</div>
-                    <div className="col-md-8">{userProfile.username}</div>
+                    <div className="col-md-4 user-profile-unique-label">Username:</div>
+                    <div className="col-md-8 user-profile-unique-value">{userProfile.username}</div>
                   </div>
                   <div className="row mb-3">
-                    <div className="col-md-4 fw-bold">Email:</div>
-                    <div className="col-md-8">{userProfile.email}</div>
+                    <div className="col-md-4 user-profile-unique-label">Email:</div>
+                    <div className="col-md-8 user-profile-unique-value">{userProfile.email}</div>
                   </div>
                   <div className="row mb-3">
-                    <div className="col-md-4 fw-bold">Address:</div>
-                    <div className="col-md-8">{userProfile.address || "No address provided"}</div>
+                    <div className="col-md-4 user-profile-unique-label">Address:</div>
+                    <div className="col-md-8 user-profile-unique-value">{userProfile.address || "No address provided"}</div>
                   </div>
                   
                   <h4 className="mt-4">Payment Information</h4>
+                  <hr className="user-profile-unique-divider" />
                   {userProfile.cardNumber ? (
                     <>
                       <div className="row mb-3">
-                        <div className="col-md-4 fw-bold">Card Holder:</div>
-                        <div className="col-md-8">{userProfile.cardName}</div>
+                        <div className="col-md-4 user-profile-unique-label">Card Holder:</div>
+                        <div className="col-md-8 user-profile-unique-value">{userProfile.cardName}</div>
                       </div>
                       <div className="row mb-3">
-                        <div className="col-md-4 fw-bold">Card Number:</div>
-                        <div className="col-md-8">•••• •••• •••• {userProfile.cardNumber.slice(-4)}</div>
+                        <div className="col-md-4 user-profile-unique-label">Card Number:</div>
+                        <div className="col-md-8 user-profile-unique-value">•••• •••• •••• {userProfile.cardNumber.slice(-4)}</div>
                       </div>
                       <div className="row mb-3">
-                        <div className="col-md-4 fw-bold">Expiry Date:</div>
-                        <div className="col-md-8">{userProfile.expiryMonth}/{userProfile.expiryYear}</div>
+                        <div className="col-md-4 user-profile-unique-label">Expiry Date:</div>
+                        <div className="col-md-8 user-profile-unique-value">{userProfile.expiryMonth}/{userProfile.expiryYear}</div>
                       </div>
                     </>
                   ) : (
@@ -362,10 +364,10 @@ const UserProfilePage = () => {
                 <form onSubmit={handleSubmit}>
                   <h4>Personal Information</h4>
                   <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Username</label>
+                    <label htmlFor="username" className="user-profile-unique-form-label">Username</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="user-profile-unique-form-control"
                       id="username"
                       name="username"
                       value={editedProfile.username || ""}
@@ -374,10 +376,10 @@ const UserProfilePage = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
+                    <label htmlFor="email" className="user-profile-unique-form-label">Email</label>
                     <input
                       type="email"
-                      className="form-control"
+                      className="user-profile-unique-form-control"
                       id="email"
                       name="email"
                       value={editedProfile.email || ""}
@@ -386,10 +388,10 @@ const UserProfilePage = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="address" className="form-label">Address</label>
+                    <label htmlFor="address" className="user-profile-unique-form-label">Address</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="user-profile-unique-form-control"
                       id="address"
                       name="address"
                       value={editedProfile.address || ""}
@@ -399,20 +401,21 @@ const UserProfilePage = () => {
                   
                   {/* Reset Password Link - Added here */}
                   <div className="mb-4">
-                    <Link to="/reset-password" className="btn btn-outline-secondary">
+                    <Link to="/reset-password" className="user-profile-unique-btn-outline">
                       <FaLock className="me-2" /> Reset Password
                     </Link>
                   </div>
 
                   <h4 className="mt-4">Payment Information</h4>
-                  <div className="alert alert-info">
+                  <hr className="user-profile-unique-divider" />
+                  <div className="user-profile-unique-alert-info">
                     <small>Note: If you provide any payment information, all payment fields must be filled.</small>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="cardName" className="form-label">Card Holder Name</label>
+                    <label htmlFor="cardName" className="user-profile-unique-form-label">Card Holder Name</label>
                     <input
                       type="text"
-                      className={`form-control ${formErrors.cardName ? 'is-invalid' : ''}`}
+                      className={`user-profile-unique-form-control ${formErrors.cardName ? 'is-invalid' : ''}`}
                       id="cardName"
                       name="cardName"
                       value={paymentInfo.cardName}
@@ -420,15 +423,15 @@ const UserProfilePage = () => {
                       placeholder="Please enter your name as it appears on the card"
                     />
                     {formErrors.cardName && (
-                      <div className="invalid-feedback">{formErrors.cardName}</div>
+                      <div className="user-profile-unique-invalid-feedback">{formErrors.cardName}</div>
                     )}
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="cardNumber" className="form-label">Card Number</label>
+                    <label htmlFor="cardNumber" className="user-profile-unique-form-label">Card Number</label>
                     <input
                       type="text"
-                      className={`form-control ${formErrors.cardNumber ? 'is-invalid' : ''}`}
+                      className={`user-profile-unique-form-control ${formErrors.cardNumber ? 'is-invalid' : ''}`}
                       id="cardNumber"
                       name="cardNumber"
                       value={paymentInfo.cardNumber}
@@ -437,16 +440,16 @@ const UserProfilePage = () => {
                       maxLength={16}
                     />
                     {formErrors.cardNumber && (
-                      <div className="invalid-feedback">{formErrors.cardNumber}</div>
+                      <div className="user-profile-unique-invalid-feedback">{formErrors.cardNumber}</div>
                     )}
                   </div>
 
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label htmlFor="expiryMonth" className="form-label">Expiry Month</label>
+                      <label htmlFor="expiryMonth" className="user-profile-unique-form-label">Expiry Month</label>
                       <input
                         type="text"
-                        className={`form-control ${formErrors.expiryMonth ? 'is-invalid' : ''}`}
+                        className={`user-profile-unique-form-control ${formErrors.expiryMonth ? 'is-invalid' : ''}`}
                         id="expiryMonth"
                         name="expiryMonth"
                         value={paymentInfo.expiryMonth}
@@ -455,14 +458,14 @@ const UserProfilePage = () => {
                         maxLength={2}
                       />
                       {formErrors.expiryMonth && (
-                        <div className="invalid-feedback">{formErrors.expiryMonth}</div>
+                        <div className="user-profile-unique-invalid-feedback">{formErrors.expiryMonth}</div>
                       )}
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="expiryYear" className="form-label">Expiry Year</label>
+                      <label htmlFor="expiryYear" className="user-profile-unique-form-label">Expiry Year</label>
                       <input
                         type="text"
-                        className={`form-control ${formErrors.expiryYear ? 'is-invalid' : ''}`}
+                        className={`user-profile-unique-form-control ${formErrors.expiryYear ? 'is-invalid' : ''}`}
                         id="expiryYear"
                         name="expiryYear"
                         value={paymentInfo.expiryYear}
@@ -471,7 +474,7 @@ const UserProfilePage = () => {
                         maxLength={2}
                       />
                       {formErrors.expiryYear && (
-                        <div className="invalid-feedback">{formErrors.expiryYear}</div>
+                        <div className="user-profile-unique-invalid-feedback">{formErrors.expiryYear}</div>
                       )}
                     </div>
                     {formErrors.expiryDate && (
@@ -482,11 +485,11 @@ const UserProfilePage = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="cvv" className="form-label">CVV</label>
-                    <div className="input-group has-validation">
+                    <label htmlFor="cvv" className="user-profile-unique-form-label">CVV</label>
+                    <div className="user-profile-unique-input-group">
                       <input
                         type={showCVV ? "text" : "password"}
-                        className={`form-control ${formErrors.cvv ? 'is-invalid' : ''}`}
+                        className={`user-profile-unique-form-control-cvv ${formErrors.cvv ? 'is-invalid' : ''}`}
                         id="cvv"
                         name="cvv"
                         value={paymentInfo.cvv}
@@ -502,16 +505,16 @@ const UserProfilePage = () => {
                         {showCVV ? <FaEyeSlash /> : <FaEye />}
                       </button>
                       {formErrors.cvv && (
-                        <div className="invalid-feedback">{formErrors.cvv}</div>
+                        <div className="user-profile-unique-invalid-feedback">{formErrors.cvv}</div>
                       )}
                     </div>
                   </div>
 
                   <button 
                     type="submit" 
-                    className="btn btn-success mt-3"
+                    className="user-profile-unique-btn-success mt-3"
                   >
-                    <FaSave /> Save Changes
+                    <FaSave className="me-2" /> Save Changes
                   </button>
                 </form>
               )}
