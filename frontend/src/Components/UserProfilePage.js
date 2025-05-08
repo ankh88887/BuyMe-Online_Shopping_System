@@ -1,8 +1,8 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
-import './UserProfilePage.css';
+import userIcon from '../Images/user_icon.png'; // Make sure this path is correct
 
 const UserProfilePage = () => {
   const { currentUser } = useContext(CurrentLoginUser);
@@ -20,18 +20,10 @@ const UserProfilePage = () => {
     cvv: ""
   });
   const [showCVV, setShowCVV] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const successTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    // Fetch user profile data when component mounts
-    if (currentUser) {
-      fetchUserProfile();
-    } else {
-      // Redirect to login if no user is logged in
-      navigate('/login');
-    }
-  }, [currentUser, navigate]);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       // Use the API endpoint from your routes with fetch
       const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile/${currentUser.userID}`);
@@ -57,7 +49,128 @@ const UserProfilePage = () => {
       setError("Failed to load user profile. Please try again later.");
       console.error("Error fetching user profile:", err);
     }
-  };
+  }, [currentUser]);
+
+  const validateForm = useCallback(() => {
+    // Create a new errors object
+    const newErrors = { ...formErrors };
+    const { cardName, cardNumber, expiryMonth, expiryYear, cvv } = paymentInfo;
+    
+    // Check if any payment field is filled
+    const anyPaymentFieldFilled = cardName || cardNumber || expiryMonth || expiryYear || cvv;
+    
+    // If any payment field is filled, validate all payment fields
+    if (anyPaymentFieldFilled) {
+      // Validate card holder name
+      if (!cardName) {
+        newErrors.cardName = "Card holder name is required";
+      } else if (!/^[a-zA-Z\s]+$/.test(cardName)) {
+        newErrors.cardName = "Card holder name can only contain letters";
+      } else {
+        delete newErrors.cardName;
+      }
+      
+      // Validate card number
+      if (!cardNumber) {
+        newErrors.cardNumber = "Card number is required";
+      } else if (cardNumber.length < 16) {
+        newErrors.cardNumber = "Card number must be 16 digits";
+      } else {
+        delete newErrors.cardNumber;
+      }
+      
+      // Validate expiry month
+      if (!expiryMonth) {
+        newErrors.expiryMonth = "Expiry month is required";
+      } else if (parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12) {
+        newErrors.expiryMonth = "Month must be between 01 and 12";
+      } else {
+        delete newErrors.expiryMonth;
+      }
+      
+      // Validate expiry year
+      if (!expiryYear) {
+        newErrors.expiryYear = "Expiry year is required";
+      } else {
+        delete newErrors.expiryYear;
+      }
+      
+      // Validate CVV
+      if (!cvv) {
+        newErrors.cvv = "CVV is required";
+      } else if (cvv.length < 3) {
+        newErrors.cvv = "CVV must be 3 digits";
+      } else {
+        delete newErrors.cvv;
+      }
+      
+      // Validate expiry date is in the future
+      if (expiryMonth && expiryYear) {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits of year
+        const currentMonth = currentDate.getMonth() + 1; // getMonth() is 0-indexed
+        
+        const month = parseInt(expiryMonth);
+        const year = parseInt(expiryYear);
+        
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+          newErrors.expiryDate = "Expiry date must be in the future";
+        } else {
+          delete newErrors.expiryDate;
+        }
+      }
+    } else {
+      // If no payment fields are filled, clear all payment-related errors
+      delete newErrors.cardName;
+      delete newErrors.cardNumber;
+      delete newErrors.expiryMonth;
+      delete newErrors.expiryYear;
+      delete newErrors.cvv;
+      delete newErrors.expiryDate;
+    }
+    
+    setFormErrors(newErrors);
+    
+    // Form is valid if there are no errors
+    return Object.keys(newErrors).length === 0;
+  }, [paymentInfo, formErrors]);
+
+  useEffect(() => {
+    // Fetch user profile data when component mounts
+    if (currentUser) {
+      fetchUserProfile();
+    } else {
+      // Redirect to login if no user is logged in
+      navigate('/login');
+    }
+    
+    // Clean up timeout on unmount
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, [currentUser, navigate, fetchUserProfile]);
+
+  // Effect to handle auto-disappearing success message
+  useEffect(() => {
+    if (success) {
+      successTimeoutRef.current = setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+    }
+    
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, [success]);
+
+  // Effect to validate form whenever payment info changes
+  useEffect(() => {
+    validateForm();
+  }, [paymentInfo, validateForm]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -70,6 +183,7 @@ const UserProfilePage = () => {
         expiryYear: userProfile.expiryYear || "",
         cvv: userProfile.cvv || ""
       });
+      setFormErrors({});
     }
     // Clear any previous messages
     setError("");
@@ -86,14 +200,71 @@ const UserProfilePage = () => {
 
   const handlePaymentChange = (e) => {
     const { name, value } = e.target;
-    setPaymentInfo({
-      ...paymentInfo,
-      [name]: value,
-    });
+    
+    // Validation for different fields
+    let newValue = value;
+    let newErrors = { ...formErrors };
+    
+    if (name === "cardName") {
+      // Only allow letters and spaces for card holder name
+      newValue = value.replace(/[^a-zA-Z\s]/g, '');
+      if (value !== newValue) {
+        newErrors.cardName = "Card holder name can only contain letters";
+      } else {
+        delete newErrors.cardName;
+      }
+    } 
+    else if (name === "cardNumber") {
+      // Only allow numbers and limit to 16 digits
+      newValue = value.replace(/\D/g, '').slice(0, 16);
+      if (newValue && newValue.length < 16) {
+        newErrors.cardNumber = "Card number must be 16 digits";
+      } else {
+        delete newErrors.cardNumber;
+      }
+    } 
+    else if (name === "expiryMonth") {
+      // Only allow numbers and limit to 2 digits
+      newValue = value.replace(/\D/g, '').slice(0, 2);
+      
+      // Check if month is valid (1-12)
+      if (newValue && (parseInt(newValue) < 1 || parseInt(newValue) > 12)) {
+        newErrors.expiryMonth = "Month must be between 01 and 12";
+      } else {
+        delete newErrors.expiryMonth;
+      }
+    } 
+    else if (name === "expiryYear") {
+      // Only allow numbers and limit to 2 digits
+      newValue = value.replace(/\D/g, '').slice(0, 2);
+      delete newErrors.expiryYear;
+    } 
+    else if (name === "cvv") {
+      // Only allow numbers and limit to 3 digits
+      newValue = value.replace(/\D/g, '').slice(0, 3);
+      if (newValue && newValue.length < 3) {
+        newErrors.cvv = "CVV must be 3 digits";
+      } else {
+        delete newErrors.cvv;
+      }
+    }
+    
+    setPaymentInfo(prev => ({
+      ...prev,
+      [name]: newValue,
+    }));
+    
+    setFormErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate the form before submission
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       // Combine profile and payment data for submission
       const profileData = {
@@ -142,7 +313,14 @@ const UserProfilePage = () => {
         <div className="col-md-8">
           <div className="card">
             <div className="card-header d-flex justify-content-between align-items-center">
-              <h3>User Profile</h3>
+              <div className="d-flex align-items-center">
+                <img 
+                  src={userIcon} 
+                  alt="User Icon" 
+                  style={{ width: '30px', height: '30px', marginRight: '10px' }} 
+                />
+                <h3 className="mb-0">User Profile</h3>
+              </div>
               {!isEditing ? (
                 <button className="btn btn-primary" onClick={handleEditToggle}>
                   <FaEdit /> Edit Profile
@@ -159,10 +337,6 @@ const UserProfilePage = () => {
 
               {!isEditing ? (
                 <div>
-                  <div className="row mb-3">
-                    <div className="col-md-4 fw-bold">User ID:</div>
-                    <div className="col-md-8">{userProfile.userID}</div>
-                  </div>
                   <div className="row mb-3">
                     <div className="col-md-4 fw-bold">Username:</div>
                     <div className="col-md-8">{userProfile.username}</div>
@@ -236,29 +410,40 @@ const UserProfilePage = () => {
                   </div>
 
                   <h4 className="mt-4">Payment Information</h4>
+                  <div className="alert alert-info">
+                    <small>Note: If you provide any payment information, all payment fields must be filled.</small>
+                  </div>
                   <div className="mb-3">
                     <label htmlFor="cardName" className="form-label">Card Holder Name</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className={`form-control ${formErrors.cardName ? 'is-invalid' : ''}`}
                       id="cardName"
                       name="cardName"
                       value={paymentInfo.cardName}
                       onChange={handlePaymentChange}
+                      placeholder="John Doe"
                     />
+                    {formErrors.cardName && (
+                      <div className="invalid-feedback">{formErrors.cardName}</div>
+                    )}
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="cardNumber" className="form-label">Card Number</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className={`form-control ${formErrors.cardNumber ? 'is-invalid' : ''}`}
                       id="cardNumber"
                       name="cardNumber"
                       value={paymentInfo.cardNumber}
                       onChange={handlePaymentChange}
-                      placeholder="1234 5678 9012 3456"
+                      placeholder="1234567890123456"
+                      maxLength={16}
                     />
+                    {formErrors.cardNumber && (
+                      <div className="invalid-feedback">{formErrors.cardNumber}</div>
+                    )}
                   </div>
 
                   <div className="row mb-3">
@@ -266,39 +451,53 @@ const UserProfilePage = () => {
                       <label htmlFor="expiryMonth" className="form-label">Expiry Month</label>
                       <input
                         type="text"
-                        className="form-control"
+                        className={`form-control ${formErrors.expiryMonth ? 'is-invalid' : ''}`}
                         id="expiryMonth"
                         name="expiryMonth"
                         value={paymentInfo.expiryMonth}
                         onChange={handlePaymentChange}
                         placeholder="MM"
+                        maxLength={2}
                       />
+                      {formErrors.expiryMonth && (
+                        <div className="invalid-feedback">{formErrors.expiryMonth}</div>
+                      )}
                     </div>
                     <div className="col-md-6">
                       <label htmlFor="expiryYear" className="form-label">Expiry Year</label>
                       <input
                         type="text"
-                        className="form-control"
+                        className={`form-control ${formErrors.expiryYear ? 'is-invalid' : ''}`}
                         id="expiryYear"
                         name="expiryYear"
                         value={paymentInfo.expiryYear}
                         onChange={handlePaymentChange}
                         placeholder="YY"
+                        maxLength={2}
                       />
+                      {formErrors.expiryYear && (
+                        <div className="invalid-feedback">{formErrors.expiryYear}</div>
+                      )}
                     </div>
+                    {formErrors.expiryDate && (
+                      <div className="col-12 mt-2">
+                        <div className="text-danger">{formErrors.expiryDate}</div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="cvv" className="form-label">CVV</label>
-                    <div className="input-group">
+                    <div className="input-group has-validation">
                       <input
                         type={showCVV ? "text" : "password"}
-                        className="form-control"
+                        className={`form-control ${formErrors.cvv ? 'is-invalid' : ''}`}
                         id="cvv"
                         name="cvv"
                         value={paymentInfo.cvv}
                         onChange={handlePaymentChange}
                         placeholder="123"
+                        maxLength={3}
                       />
                       <button 
                         type="button" 
@@ -307,10 +506,16 @@ const UserProfilePage = () => {
                       >
                         {showCVV ? <FaEyeSlash /> : <FaEye />}
                       </button>
+                      {formErrors.cvv && (
+                        <div className="invalid-feedback">{formErrors.cvv}</div>
+                      )}
                     </div>
                   </div>
 
-                  <button type="submit" className="btn btn-success mt-3">
+                  <button 
+                    type="submit" 
+                    className="btn btn-success mt-3"
+                  >
                     <FaSave /> Save Changes
                   </button>
                 </form>
