@@ -18,6 +18,7 @@ const port = 5005;
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 connectDB();
 

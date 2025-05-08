@@ -24,7 +24,7 @@ function App() {
   useEffect(() => {
     const navBar = document.querySelector('nav');
     if (navBar) {
-      setNavHeight(navBar.offsetHeight);
+      setNavHeight(100);
     }
   }, []);
 
