@@ -6,42 +6,96 @@ import './UserProfilePage.css';
 const UserProfile = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
-    username: 'JohnDoe',
-    email: 'john.doe@example.com',
-    address: '123 Main St, City, Country',
-    cardName: 'John Doe',
-    cardNumber: '3872 2378 2331 4242',
-    expiryMonth: '04',
-    expiryYear: '25',
-    cvv: '888'
+    username: '',
+    email: '',
+    address: '',
+    cardName: '',
+    cardNumber: '',
+    expiryMonth: '',
+    expiryYear: '',
+    cvv: ''
   });
-
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [tempData, setTempData] = useState({...userData});
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showCVV, setShowCVV] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState('');
+  const [updateStatus, setUpdateStatus] = useState('');
+
+  useEffect(() => {
+    // Reset visibility states when not in edit mode
+    if (!editMode) {
+      setShowCardNumber(false);
+      setShowCVV(false);
+    }
+  }, [editMode]);
 
   useEffect(() => {
     // Fetch user data from API
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/user/profile`, {
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
-          }
-        });
-        const data = await response.json();
-        if (data.success) {
-          setUserData(data.user);
-          setTempData(data.user);
+    // const fetchUserData = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile`, {
+    //       headers: {
+    //         'Authorization': 'Bearer ' + localStorage.getItem('token')
+    //       }
+    //     });
+        
+    //     const data = await response.json();
+        
+    //     if (data.success) {
+    //       setUserData(data.user);
+    //       setTempData(data.user);
+    //       setError(null);
+    //     } else {
+    //       setError(data.message || 'Failed to load profile');
+    //       if (response.status === 401) {
+    //         // Unauthorized - redirect to login
+    //         localStorage.removeItem('token');
+    //         navigate('/login');
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error('Error fetching user data:', error);
+    //     setError('Network error. Please try again later.');
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+  const fetchUserData = async () => {
+    setLoading(true); // Set loading to true at the start
+    try {
+      // Get the userID from localStorage
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userID = user?.userID || "1"; // Default to 1 if not found
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile/${userID}`, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUserData(data.user);
+        setTempData(data.user);
+        setError(null);
+      } else {
+        setError(data.message || 'Failed to load profile');
       }
-    };
-    
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setError('Network error. Please try again later.');
+    } finally {
+      setLoading(false); // Set loading to false when done, whether successful or not
+    }
+  };
+  
     fetchUserData();
-  }, []);
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,7 +104,10 @@ const UserProfile = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/user/profile`, {
+      setUpdateStatus('');
+      setUpdateMessage('');
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,13 +115,25 @@ const UserProfile = () => {
         },
         body: JSON.stringify(tempData)
       });
+
+      // Log the full response for debugging
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
+      
       if (data.success) {
         setUserData(tempData);
         setEditMode(false);
+        setUpdateStatus('success');
+        setUpdateMessage('Profile updated successfully!');
+      } else {
+        setUpdateStatus('error');
+        setUpdateMessage(data.message || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
+      setUpdateStatus('error');
+      setUpdateMessage('Network error. Please try again later.');
     }
   };
 
@@ -94,20 +163,34 @@ const UserProfile = () => {
     return showCVV ? cvv : '•••';
   };
 
+  if (loading) {
+    return <div className="loading">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
   return (
     <div className="profile-background">
       <div className="user-profile-container">
         <div className="profile-header">
           <img 
-            src="/path-to-user-icon.png" 
+            src="/path-to-user-icon.png"
             alt="User Icon" 
             className="user-icon"
           />
           <h1>{userData.username}</h1>
         </div>
-
+        
+        {updateMessage && (
+          <div className={`update-message ${updateStatus}`}>
+            {updateMessage}
+          </div>
+        )}
+        
         <div className="profile-section">
-          <h3>Edit User Information</h3>
+          <h3>User Information</h3>
           
           <div className="form-group">
             <label>Username</label>
@@ -147,7 +230,7 @@ const UserProfile = () => {
                 onChange={handleInputChange}
               />
             ) : (
-              <div className="info-display">{userData.address}</div>
+              <div className="info-display">{userData.address || 'Not provided'}</div>
             )}
           </div>
         </div>
@@ -165,7 +248,7 @@ const UserProfile = () => {
                 onChange={handleInputChange}
               />
             ) : (
-              <div className="info-display">{userData.cardName}</div>
+              <div className="info-display">{userData.cardName || 'Not provided'}</div>
             )}
           </div>
 
@@ -182,20 +265,22 @@ const UserProfile = () => {
                 />
               ) : (
                 <div className="info-display">
-                  {formatCardNumber(userData.cardNumber)}
+                  {userData.cardNumber ? formatCardNumber(userData.cardNumber) : 'Not provided'}
                 </div>
               )}
-              <button 
-                type="button" 
-                className="eye-icon"
-                onClick={toggleCardNumberVisibility}
-              >
-                {showCardNumber ? <FaEyeSlash /> : <FaEye />}
-              </button>
+              {(editMode || userData.cardNumber) && (
+                <button 
+                  type="button" 
+                  className="eye-icon"
+                  onClick={toggleCardNumberVisibility}
+                >
+                  {showCardNumber ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="form-row">
+          <div className="form-row-1">
             <div className="form-group">
               <label>Expiry date</label>
               {editMode ? (
@@ -220,7 +305,9 @@ const UserProfile = () => {
                 </div>
               ) : (
                 <div className="info-display">
-                  {userData.expiryMonth}/{userData.expiryYear}
+                  {userData.expiryMonth && userData.expiryYear ? 
+                    `${userData.expiryMonth}/${userData.expiryYear}` : 
+                    'Not provided'}
                 </div>
               )}
             </div>
@@ -238,16 +325,18 @@ const UserProfile = () => {
                   />
                 ) : (
                   <div className="info-display">
-                    {formatCVV(userData.cvv)}
+                    {userData.cvv ? formatCVV(userData.cvv) : 'Not provided'}
                   </div>
                 )}
-                <button 
-                  type="button" 
-                  className="eye-icon"
-                  onClick={toggleCVVVisibility}
-                >
-                  {showCVV ? <FaEyeSlash /> : <FaEye />}
-                </button>
+                {(editMode || userData.cvv) && (
+                  <button 
+                    type="button" 
+                    className="eye-icon"
+                    onClick={toggleCVVVisibility}
+                  >
+                    {showCVV ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                )}
               </div>
             </div>
           </div>

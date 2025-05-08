@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Alert from "./AdminPageAlert";
 import "./AdminPage.css";
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const AdminPage = () => {
     const [activeTab, setActiveTab] = useState("newProduct");
@@ -10,7 +11,21 @@ const AdminPage = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showUserForm, setShowUserForm] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
-    const [formData, setFormData] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+    const [formData, setFormData] = useState({
+        // productID: "",
+        productName: "",
+        price: "",
+        stock: "",
+        description: "",
+        userName: "",
+        password: "",
+        email: "",
+        isAdmin: false,
+    });
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage] = useState(5);
     const [productsPerPage] = useState(5);
@@ -27,12 +42,12 @@ const AdminPage = () => {
 
     const handleReset = useCallback(() => {
         const initialFormData = {
-            productId: "",
-            name: "",
+            // productID: "",
+            productName: "",
             price: "",
             stock: "",
             description: "",
-            username: "",
+            userName: "",
             password: "",
             email: "",
             isAdmin: false,
@@ -42,8 +57,9 @@ const AdminPage = () => {
         setSelectedProduct(null);
         setShowUserForm(false);
         setShowProductForm(false);
+        setShowPassword(false);
     }, []);
-
+    
     useEffect(() => {
         if (activeTab === "modifyUser") {
             fetchUsers();
@@ -65,15 +81,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                const combinedUsers = data.user.map((user) => ({
-                    _id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    isAdmin: user.isAdmin,
-                }));
-                setUsers(combinedUsers);
-            }
+            setUsers(data);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
@@ -89,9 +97,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                setProducts(data.products);
-            }
+            setProducts(data);
         } catch (error) {
             console.error("Error fetching products:", error);
         }
@@ -107,18 +113,16 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                return data.user;
-            }
+            return data;
         } catch (error) {
             console.error("Error fetching user details:", error);
         }
         return null;
     };
 
-    const fetchProductDetails = async (productId) => {
+    const fetchProductDetails = async (productID) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${productId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${productID}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -126,9 +130,7 @@ const AdminPage = () => {
                 },
             });
             const data = await response.json();
-            if (data.success) {
-                return data.product;
-            }
+            return data;
         } catch (error) {
             console.error("Error fetching product details:", error);
         }
@@ -136,7 +138,7 @@ const AdminPage = () => {
     };
 
     const handleCreateProduct = async () => {
-        if (!formData.name) {
+        if (!formData.productName) {
             showAlert("Please enter a product name.", "error");
             return;
         }
@@ -144,85 +146,91 @@ const AdminPage = () => {
             showAlert("Please enter a price.", "error");
             return;
         }
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
-                body: JSON.stringify({
-                    productId: formData.productId,
-                    name: formData.name,
-                    price: formData.price,
-                    stock: formData.stock,
-                    description: formData.description,
-                }),
-            });
-            const data = await response.json();
-            if (data.success) {
-                handleReset();
-                showAlert(`Product [${formData.name}] created successfully!`, "success");
-            } else {
-                showAlert("The product has already existed.", "error");
-            }
-        } catch (error) {
-            console.error("Error creating product:", error);
-            showAlert("Failed to create product.", "error");
-        }
-    };
-
-    const handleCreateUser = async () => {
-        if (!formData.password) {
-            showAlert("Please enter a password.", "error");
+        if (!formData.stock) {
+            showAlert("Please enter a stock.", "error");
             return;
         }
-        if (!formData.username) {
-            showAlert("Please enter a username.", "error");
+        if (!formData.description) {
+            showAlert("Please enter a product description.", "error");
             return;
         }
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: "Bearer " + localStorage.getItem("token"),
             },
             body: JSON.stringify({
-                username: formData.username,
-                password: formData.password,
-                email: formData.email,
-                isAdmin: formData.isAdmin,
+                productName: formData.productName,
+                price: formData.price,
+                stock: formData.stock,
+                description: formData.description,
             }),
         });
         const data = await response.json();
-        if (data.success) {
+        if (data._id) {
             handleReset();
-            if (formData.isAdmin) {
-                showAlert(`Admin [${formData.username}] created successfully!`, "success");
-            } else {
-                showAlert(`User [${formData.username}] created successfully!`, "success");
-            }
+            showAlert(`Product [${formData.productName}] created successfully!`, "success");
         } else {
-            showAlert("Username has been taken already.", "error");
+            showAlert("Failed to create product.", "error");
         }
     };
 
-    /*const handleInputChange = (e) => {
-        let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-        
-        // For number fields, ensure they don't go below 0
-        if ((e.target.name === "price" || e.target.name === "stock") && e.target.type === "number") {
-            const numValue = parseFloat(value);
-            if (isNaN(numValue) || numValue < 0) {
-                value = 0;
-            } else {
-                value = numValue;
-            }
+    const handleCreateUser = async () => {
+        // Existing validation checks
+        if (!formData.userName) {
+            showAlert("Please enter a username.", "error");
+            return;
         }
-
-        setFormData({ ...formData, [e.target.name]: value });
-    };*/
-
+        if (!formData.password) {
+            showAlert("Please enter a password.", "error");
+            return;
+        }
+        if (!formData.email) {
+            showAlert("Please enter an email.", "error");
+            return;
+        }
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+                body: JSON.stringify({
+                    userName: formData.userName,
+                    password: formData.password,
+                    email: formData.email,
+                    isAdmin: formData.isAdmin,
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (!response.ok) {
+                // Handle different error types
+                if (data.message === 'Username already exists') {
+                    showAlert("Username has been taken already.", "error");
+                } else if (data.message === 'Email already exists') {
+                    showAlert("Email is already registered.", "error");
+                } else {
+                    showAlert("Failed to create user: " + (data.message || "Unknown error"), "error");
+                }
+                return;
+            }
+    
+            // Success case
+            if (data._id) {
+                handleReset();
+                const userType = formData.isAdmin ? "Admin" : "User";
+                showAlert(`${userType} [${formData.userName}] created successfully!`, "success");
+            }
+        } catch (error) {
+            console.error("Network error:", error);
+            showAlert("Failed to connect to the server.", "error");
+        }
+    };
+    
     const handleInputChange = (e) => {
         let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
         
@@ -243,35 +251,43 @@ const AdminPage = () => {
             }
         }
         
-        setFormData({ ...formData, [e.target.name]: value });
+        // Map input name to state property if needed
+        let stateProp = e.target.name;
+        if (e.target.name === "userName") {
+            stateProp = "userName";
+        } else if (e.target.name === "productID") {
+            stateProp = "productID";
+        }
+        
+        setFormData({ ...formData, [stateProp]: value });
     };
 
     const handleManageUser = async (user) => {
-        const userDetails = await fetchUserDetails(user._id);
+        const userDetails = await fetchUserDetails(user.userID);
         if (userDetails) {
             setSelectedUser(userDetails);
             setFormData({
                 ...formData,
-                username: userDetails.username,
+                userName: userDetails.userName || "",
                 password: "",
-                email: userDetails.email,
-                isAdmin: userDetails.isAdmin,
+                email: userDetails.email || "",
+                isAdmin: !!userDetails.isAdmin,
             });
             setShowUserForm(true);
         }
     };
 
     const handleManageProduct = async (product) => {
-        const productDetails = await fetchProductDetails(product._id);
+        const productDetails = await fetchProductDetails(product.productID);
         if (productDetails) {
             setSelectedProduct(productDetails);
             setFormData({
                 ...formData,
-                productId: productDetails.productId,
-                name: productDetails.name,
-                price: productDetails.price,
-                stock: productDetails.stock,
-                description: productDetails.description,
+                productID: productDetails.productID || "",
+                productName: productDetails.productName || "",
+                price: productDetails.price || "",
+                stock: productDetails.stock || "",
+                description: productDetails.description || "",
             });
             setShowProductForm(true);
         }
@@ -280,69 +296,78 @@ const AdminPage = () => {
     const handleUpdateUser = async () => {
         try {
             const previousIsAdmin = selectedUser.isAdmin;
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser._id}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password,
-                    email: formData.email,
-                    isAdmin: formData.isAdmin,
-                }),
-            });
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, 
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify({
+                        userName: formData.userName,
+                        password: formData.password,
+                        email: formData.email,
+                        isAdmin: formData.isAdmin,
+                    }),
+                }
+            );
+    
             const data = await response.json();
-            if (data.success) {
+    
+            if (!response.ok) {
+                // Handle specific error messages from backend
+                if (data.message === 'Username already exists') {
+                    showAlert("Username has been taken already.", "error");
+                } else if (data.message === 'Email already exists') {
+                    showAlert("Email is already registered.", "error");
+                } else {
+                    showAlert("Failed to update user: " + (data.message || "Unknown error"), "error");
+                }
+                return;
+            }
+    
+            if (data._id) {
                 console.log("User updated successfully");
                 setShowUserForm(false);
                 fetchUsers();
                 handleReset();
                 if (previousIsAdmin === formData.isAdmin) {
-                    if (formData.isAdmin) {
-                        showAlert(`Admin [${formData.username}] updated successfully!`, "success");
-                    } else {
-                        showAlert(`User [${formData.username}] updated successfully!`, "success");
-                    }
+                    const userType = formData.isAdmin ? "Admin" : "User";
+                    showAlert(`${userType} [${formData.userName}] updated successfully!`, "success");
                 } else {
-                    if (formData.isAdmin) {
-                        showAlert(`[${formData.username}] has been updated to an Admin!`, "success");
-                    } else {
-                        showAlert(`[${formData.username}] has been updated to an User!`, "success");
-                    }
+                    const newType = formData.isAdmin ? "Admin" : "Regular User";
+                    showAlert(`[${formData.userName}] updated to ${newType}!`, "success");
                 }
-            } else {
-                showAlert("Username has been taken already.", "error");
             }
         } catch (error) {
             console.error("Error updating user:", error);
+            showAlert("Failed to connect to the server.", "error");
         }
     };
-
+    
     const handleUpdateProduct = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct._id}`, {
-                method: "POST",
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct.productID}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
                 body: JSON.stringify({
-                    productId: formData.productId,
-                    name: formData.name,
+                    productName: formData.productName,
                     price: formData.price,
                     stock: formData.stock,
                     description: formData.description,
                 }),
             });
             const data = await response.json();
-            if (data.success) {
+            if (data._id) {
                 console.log("Product updated successfully");
                 setShowProductForm(false);
                 fetchProducts();
                 handleReset();
-                showAlert(`Product [${formData.name}] updated successfully!`, "success");
+                showAlert(`Product [${formData.productName}] updated successfully!`, "success");
             } else {
                 showAlert("Failed to update product.", "error");
             }
@@ -353,20 +378,23 @@ const AdminPage = () => {
 
     const handleDeleteUser = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser._id}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/users/${selectedUser.userID}`, {
                 method: "DELETE",
-                headers: { Authorization: "Bearer " + localStorage.getItem("token") },
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token") 
+                },
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.message === "User deleted successfully") {
                 console.log("User deleted successfully");
                 setShowUserForm(false);
                 fetchUsers();
                 handleReset();
                 if (selectedUser.isAdmin) {
-                    showAlert(`Admin [${formData.username}] deleted successfully!`, "success");
+                    showAlert(`Admin [${formData.userName}] deleted successfully!`, "success");
                 } else {
-                    showAlert(`User [${formData.username}] deleted successfully!`, "success");
+                    showAlert(`User [${formData.userName}] deleted successfully!`, "success");
                 }
             } else {
                 showAlert("Failed to delete user.", "error");
@@ -378,17 +406,20 @@ const AdminPage = () => {
 
     const handleDeleteProduct = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct._id}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/products/${selectedProduct.productID}`, {
                 method: "DELETE",
-                headers: { Authorization: "Bearer " + localStorage.getItem("token") },
+                headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token") 
+                },
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.message === "Product deleted successfully") {
                 console.log("Product deleted successfully");
                 setShowProductForm(false);
                 fetchProducts();
                 handleReset();
-                showAlert(`Product [${formData.name}] deleted successfully!`, "success");
+                showAlert(`Product [${formData.productName}] deleted successfully!`, "success");
             } else {
                 showAlert("Failed to delete product.", "error");
             }
@@ -424,7 +455,6 @@ const AdminPage = () => {
         for (let i = 1; i <= totalPages; i++) {
             pageNumbers.push(i);
         }
-
         return (
             <div className="pagination">
                 <button className="pagination-arrow" onClick={() => currentPage > 1 && paginate(currentPage - 1)} disabled={currentPage === 1}>
@@ -463,8 +493,8 @@ const AdminPage = () => {
                     </thead>
                     <tbody>
                         {currentUsers.map((user) => (
-                            <tr key={user._id}>
-                                <td>{user.username}</td>
+                            <tr key={user._id || user.userID}>
+                                <td>{user.userName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.isAdmin ? "Admin" : "Regular User"}</td>
                                 <td>
@@ -485,26 +515,27 @@ const AdminPage = () => {
         const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
         return (
-            <div className="user-group">
+            <div className="product-group">
                 <h3>Product List</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Product ID</th>
+                            <th>ID</th>
                             <th>Product name</th>
                             <th>Price</th>
                             <th>Stock</th>
+                            <th>Description</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentProducts.map((product) => (
-                            <tr key={product._id}>
-                                <td>{product.productId}</td>
-                                <td>{product.name}</td>
+                            <tr key={product._id || product.productID}>
+                                <td>{product.productID}</td>
+                                <td>{product.productName}</td>
                                 <td>${product.price}</td>
-                                <td>${product.stock}</td>
-                                <td>${product.description}</td>
+                                <td>{product.stock}</td>
+                                <td>{product.description}</td>
                                 <td>
                                     <button onClick={() => handleManageProduct(product)}>Manage</button>
                                 </td>
@@ -557,47 +588,62 @@ const AdminPage = () => {
                     <form onSubmit={handleSubmit}>
                         {activeTab === "newProduct" && (
                             <div className="form-content">
-                                <div className="form-row">
+                                {/* <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId} onChange={handleInputChange} required />
-                                </div>
-                                <div className="form-row">
+                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} required />
+                                </div> */}
+                                <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Price:</label>
-                                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} min="0" step="0.1" required />
+                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} min="0" step="0.1" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Stock:</label>
-                                    <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} min="0" step="1" required />
+                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} min="0" step="1" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Description:</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange}></textarea>
+                                    <textarea name="description" value={formData.description || ""} onChange={handleInputChange}></textarea>
                                 </div>
                             </div>
                         )}
                         
                         {activeTab === "createUser" && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Username:</label>
-                                    <input type="text" name="username" value={formData.username} onChange={handleInputChange} />
+                                    <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row">
+                                {/* <div className="form-row-1">
                                     <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Please input the password" />
+                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
+                                </div> */}
+                                <div className="form-row-1">
+                                    <label>Password:</label>
+                                    <div className="password-input-container">
+                                        <input 
+                                            type={showPassword ? "text" : "password"} 
+                                            name="password" 
+                                            value={formData.password || ""} 
+                                            onChange={handleInputChange} 
+                                            placeholder="Please input the password" 
+                                        />
+                                        <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Email:</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Please input the email" />
+                                    <input type="email" name="email" value={formData.email || ""} onChange={handleInputChange} placeholder="Please input the email" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <span>Is Admin</span>
                                     <label className="switch">
-                                        <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleInputChange} />
+                                        <input type="checkbox" name="isAdmin" checked={!!formData.isAdmin} onChange={handleInputChange} />
                                         <span className="slider round"></span>
                                     </label>
                                 </div>
@@ -606,22 +652,37 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyUser" && showUserForm && (
                             <div className="form-content">
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Username:</label>
-                                    <input type="text" name="username" value={formData.username} onChange={handleInputChange} />
+                                    <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                <div className="form-row">
+                                {/* <div className="form-row-1">
                                     <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Please input the password" />
+                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
+                                </div> */}
+                                <div className="form-row-1">
+                                    <label>Password:</label>
+                                    <div className="password-input-container">
+                                        <input 
+                                            type={showPassword ? "text" : "password"} 
+                                            name="password" 
+                                            value={formData.password || ""} 
+                                            onChange={handleInputChange} 
+                                            placeholder="Please input the password" 
+                                        />
+                                        <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Email:</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Please input the email" />
+                                    <input type="email" name="email" value={formData.email || ""} onChange={handleInputChange} placeholder="Please input the email" />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <span>Is Admin</span>
                                     <label className="switch">
-                                        <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleInputChange} />
+                                        <input type="checkbox" name="isAdmin" checked={!!formData.isAdmin} onChange={handleInputChange} />
                                         <span className="slider round"></span>
                                     </label>
                                 </div>
@@ -630,25 +691,25 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyProduct" && showProductForm && (
                             <div className="form-content">
-                                <div className="form-row">
+                                {/* <div className="form-row-1">
                                     <label>Product ID:</label>
-                                    <input type="text" name="productId" value={formData.productId} onChange={handleInputChange} required />
-                                </div>
-                                <div className="form-row">
+                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} readOnly />
+                                </div> */}
+                                <div className="form-row-1">
                                     <label>Product name:</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+                                    <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Price:</label>
-                                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} required />
+                                    <input type="number" name="price" value={formData.price || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Stock:</label>
-                                    <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} required />
+                                    <input type="number" name="stock" value={formData.stock || ""} onChange={handleInputChange} required />
                                 </div>
-                                <div className="form-row">
+                                <div className="form-row-1">
                                     <label>Description:</label>
-                                    <textarea name="description" value={formData.description} onChange={handleInputChange}></textarea>
+                                    <textarea name="description" value={formData.description || ""} onChange={handleInputChange}></textarea>
                                 </div>
                             </div>
                         )}
@@ -674,11 +735,11 @@ const AdminPage = () => {
                                 </>
                             ) : (
                                 <button type="submit" className="btn-update">
-                                    {activeTab === "newProduct" ? "Create" : "Create"}
+                                    Create
                                 </button>
                             )}
                             <button type="button" className="btn-decline" onClick={handleReset}>
-                                Reset
+                                Reset / Return
                             </button>
                         </div>
                     </form>

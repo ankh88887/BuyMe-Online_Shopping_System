@@ -13,10 +13,6 @@ function UserConstructor(user) {
   };
 }
 
-//router.post('/login', LoginUser);
-//router.post('/register', RegisterUser);
-//router.put('/change-password/:userId', ForgetPassword);
-
 
 // @desc    Get single User by username
 // @route   GET /api/users/search/:userName
@@ -188,6 +184,43 @@ exports.ForgetPassword = async (req, res) => {
   } catch (error) {
     console.error('Error in ForgetPassword:', error);
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Get single User by ID
+// @route   GET /api/users/:id
+exports.getUserById = async (req, res) => {
+  const userID = req.params.id; // Get the UserID from the request parameters
+  try {
+    const user = await User.findOne({ userID: userID }); // Search for the user by userID
+    if (user) {
+      const constructedUser = UserConstructor(user); // Transform the user
+      console.log('User found:', constructedUser); // Log the transformed User
+      res.json(constructedUser); // Return the transformed User
+    } else {
+      res.status(404).json({ error: 'User not found' }); // Handle not found
+    }
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Server error' }); // Handle server error
+  }
+};// @desc    Get all Users
+// @route   GET /api/users
+// @access  Public
+exports.getUsers = async (req, res) => {
+  try {
+    const User = await Users.find({});
+    if (User) {
+      console.log('User found:', User); // Log the found user
+      res.json({
+        users: User.map((User) => (UserConstructor(User)))
+      })
+    } else {
+      res.status(404).json({ error: 'User not found' }); // Handle not found
+    }
+  } catch (error) {
+    console.error('Error fetching User:', error);
+    res.status(500).json({ error: 'Server error' }); // Handle server error
   }
 };
 

@@ -24,6 +24,7 @@ export default function LoginPage() {
         setCurrentUser(user);
         localStorage.setItem('currentUser', JSON.stringify(user)); // Save to localStorage
         console.log('Current User:', user);
+        console.log('Current User in user variable:', currentUser); 
         console.log('User ID:', user.userID);
         navigate('/');
       } else {

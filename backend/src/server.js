@@ -7,9 +7,12 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 
+const adminRoutes = require('./routes/adminRoutes');
+const userProfileRoutes = require('./routes/userProfileRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+
 const connectDB = require('./db');
 const app = express();
-
 app.use(cors()); // Enable CORS for all routes
 app.use(bodyParser.json());
 
@@ -28,7 +31,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/carts', cartRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/reviews', reviewRoutes);app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
+
 connectDB();
 
 app.get('/', (req, res) => {

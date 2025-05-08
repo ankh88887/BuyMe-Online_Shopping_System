@@ -8,4 +8,15 @@ router.get('/check', reviewController.checkReview);
 // POST /reviews - Create a new review
 router.post('/', reviewController.createReview);
 
-module.exports = router;
+module.exports = router;const express = require('express');
+const router = express.Router();
+
+const {
+  getReviews,
+  getReviewsByProductsId
+} = require('../controllers/reviewController');
+
+router.get('/', getReviews)
+router.get('/:products_id', getReviewsByProductsId)
+
+module.exports = router
