@@ -19,19 +19,19 @@ import { CurrentLoginUser } from './Components/CurrentLoginUser';
 function App() {
   const [navHeight, setNavHeight] = useState(0);
   const [cartItems, setCartItems] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null); // Initialize currentUser state
+  const [currentUser, setCurrentUser] = useState(null); 
 
   useEffect(() => {
     const navBar = document.querySelector('nav');
     if (navBar) {
-      setNavHeight(navBar.offsetHeight); // Get the height of the nav bar
+      setNavHeight(navBar.offsetHeight);
     }
   }, []);
 
   return (
     <div>
       <BrowserRouter>
-        {/* Provide currentUser and setCurrentUser to the entire app */}
+        {/* Give the function currentUser and setCurrentUser to the app */}
         <CurrentLoginUser.Provider value={{ currentUser, setCurrentUser }}>
           <AppContent navHeight={navHeight} cartItems={cartItems} setCartItems={setCartItems} />
         </CurrentLoginUser.Provider>

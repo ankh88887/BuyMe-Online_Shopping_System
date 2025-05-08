@@ -13,13 +13,11 @@ export default function ForgetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if the new passwords match
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
 
-    // Check password strength
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
     if (!passwordRegex.test(password)) {
       alert('Password must be at least 8 characters long and contain both letters and numbers.');
@@ -27,7 +25,6 @@ export default function ForgetPasswordPage() {
     }
 
     try {
-      // Send request to verify user and update password
       const response = await fetch('http://localhost:5005/api/users/forget-password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +39,7 @@ export default function ForgetPasswordPage() {
         } else {
           alert('Password updated successfully!');
         }
-        navigate('/login'); // Redirect to the login page
+        navigate('/login'); 
       } else {
         const contentType = response.headers.get('Content-Type');
         if (contentType && contentType.includes('application/json')) {

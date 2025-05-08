@@ -13,7 +13,6 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      // Send login data to the backend
       const response = await fetch('http://localhost:5005/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,11 +22,10 @@ export default function Login() {
       if (response.ok) {
         const user = await response.json();
 
-        // Set the current user
         setCurrentUser(user);
-        console.log('Current User:', user); // Log the current user for testing
-        console.log('User ID:', user.userID); // Log the userID for testing
-        navigate('/'); // Redirect to the home page
+        console.log('Current User:', user); 
+        console.log('User ID:', user.userID); 
+        navigate('/');
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Invalid username/email or password!');

@@ -12,21 +12,18 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if passwords match
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
 
-    // Check password strength
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters, with letters and numbers
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; 
     if (!passwordRegex.test(password)) {
       alert('Password must be at least 8 characters long and contain both letters and numbers.');
       return;
     }
 
     try {
-      // Send user data to the backend
       const response = await fetch('http://localhost:5005/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,9 +37,9 @@ export default function SignUp() {
 
       if (response.ok) {
         const user = await response.json();
-        console.log('User created:', user); // Log the created user for testing
+        console.log('User created:', user); 
         alert('Account created successfully!');
-        navigate('/login'); // Redirect to the login page
+        navigate('/login'); 
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Failed to create account');

@@ -5,25 +5,20 @@ import { CurrentLoginUser } from "./CurrentLoginUser";
 
 export default function LogoutPage() {
   const navigate = useNavigate();
-  const { setCurrentUser } = useContext(CurrentLoginUser); // Use setCurrentUser from context
-
+  const { setCurrentUser } = useContext(CurrentLoginUser); 
   useEffect(() => {
-    // Clear the current user from localStorage
     localStorage.removeItem('currentUser');
   }, []);
 
   const handleLogout = () => {
-    // Clear user data from localStorage
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
     localStorage.removeItem('email');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('token');
 
-    // Reset currentUser to null
     setCurrentUser(null);
 
-    // Redirect to login page
     navigate('/login');
   };
 
@@ -34,7 +29,7 @@ export default function LogoutPage() {
         <div className="main">
           <div className="content"> 
             <h2>You are logged out. See you next time!</h2>
-            <h2>Thank you for using BuyMe! BuyMe, Buy More</h2>
+            <h2>Want to go shopping? Press the button below to Login again!</h2>
             <button className="button" type="button" onClick={handleLogout}>
               <Link to="/login">Login Page</Link>
             </button>
