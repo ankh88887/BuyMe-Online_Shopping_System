@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
-import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import userIcon from '../Images/user_icon.png'; // Make sure this path is correct
 
 const UserProfilePage = () => {
@@ -51,9 +51,17 @@ const UserProfilePage = () => {
     }
   }, [currentUser]);
 
+  // Use a ref to access formErrors without causing re-renders
+  const formErrorsRef = useRef(formErrors);
+  
+  // Update the ref whenever formErrors changes
+  useEffect(() => {
+    formErrorsRef.current = formErrors;
+  }, [formErrors]);
+
   const validateForm = useCallback(() => {
     // Create a new errors object
-    const newErrors = { ...formErrors };
+    const newErrors = {};
     const { cardName, cardNumber, expiryMonth, expiryYear, cvv } = paymentInfo;
     
     // Check if any payment field is filled
@@ -66,8 +74,6 @@ const UserProfilePage = () => {
         newErrors.cardName = "Card holder name is required";
       } else if (!/^[a-zA-Z\s]+$/.test(cardName)) {
         newErrors.cardName = "Card holder name can only contain letters";
-      } else {
-        delete newErrors.cardName;
       }
       
       // Validate card number
@@ -75,8 +81,6 @@ const UserProfilePage = () => {
         newErrors.cardNumber = "Card number is required";
       } else if (cardNumber.length < 16) {
         newErrors.cardNumber = "Card number must be 16 digits";
-      } else {
-        delete newErrors.cardNumber;
       }
       
       // Validate expiry month
@@ -84,15 +88,11 @@ const UserProfilePage = () => {
         newErrors.expiryMonth = "Expiry month is required";
       } else if (parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12) {
         newErrors.expiryMonth = "Month must be between 01 and 12";
-      } else {
-        delete newErrors.expiryMonth;
       }
       
       // Validate expiry year
       if (!expiryYear) {
         newErrors.expiryYear = "Expiry year is required";
-      } else {
-        delete newErrors.expiryYear;
       }
       
       // Validate CVV
@@ -100,8 +100,6 @@ const UserProfilePage = () => {
         newErrors.cvv = "CVV is required";
       } else if (cvv.length < 3) {
         newErrors.cvv = "CVV must be 3 digits";
-      } else {
-        delete newErrors.cvv;
       }
       
       // Validate expiry date is in the future
@@ -115,25 +113,15 @@ const UserProfilePage = () => {
         
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
           newErrors.expiryDate = "Expiry date must be in the future";
-        } else {
-          delete newErrors.expiryDate;
         }
       }
-    } else {
-      // If no payment fields are filled, clear all payment-related errors
-      delete newErrors.cardName;
-      delete newErrors.cardNumber;
-      delete newErrors.expiryMonth;
-      delete newErrors.expiryYear;
-      delete newErrors.cvv;
-      delete newErrors.expiryDate;
     }
     
     setFormErrors(newErrors);
     
     // Form is valid if there are no errors
     return Object.keys(newErrors).length === 0;
-  }, [paymentInfo, formErrors]);
+  }, [paymentInfo]); // No formErrors dependency
 
   useEffect(() => {
     // Fetch user profile data when component mounts
@@ -359,7 +347,7 @@ const UserProfilePage = () => {
                       </div>
                       <div className="row mb-3">
                         <div className="col-md-4 fw-bold">Card Number:</div>
-                        <div className="col-md-8">**** **** **** {userProfile.cardNumber.slice(-4)}</div>
+                        <div className="col-md-8">•••• •••• •••• {userProfile.cardNumber.slice(-4)}</div>
                       </div>
                       <div className="row mb-3">
                         <div className="col-md-4 fw-bold">Expiry Date:</div>
@@ -408,6 +396,13 @@ const UserProfilePage = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
+                  {/* Reset Password Link - Added here */}
+                  <div className="mb-4">
+                    <Link to="/reset-password" className="btn btn-outline-secondary">
+                      <FaLock className="me-2" /> Reset Password
+                    </Link>
+                  </div>
 
                   <h4 className="mt-4">Payment Information</h4>
                   <div className="alert alert-info">
@@ -422,7 +417,7 @@ const UserProfilePage = () => {
                       name="cardName"
                       value={paymentInfo.cardName}
                       onChange={handlePaymentChange}
-                      placeholder="John Doe"
+                      placeholder="Please enter your name as it appears on the card"
                     />
                     {formErrors.cardName && (
                       <div className="invalid-feedback">{formErrors.cardName}</div>
@@ -438,7 +433,7 @@ const UserProfilePage = () => {
                       name="cardNumber"
                       value={paymentInfo.cardNumber}
                       onChange={handlePaymentChange}
-                      placeholder="1234567890123456"
+                      placeholder="8888 8888 8888 8888"
                       maxLength={16}
                     />
                     {formErrors.cardNumber && (
