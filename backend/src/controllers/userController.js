@@ -192,11 +192,11 @@ exports.ForgetPassword = async (req, res) => {
 // @access  Public
 exports.getUsers = async (req, res) => {
   try {
-    const users = await Users.find({});
-    if (users) {
-      console.log('User found:', users); // Log the found user
+    const User = await Users.find({});
+    if (User) {
+      console.log('User found:', User); // Log the found user
       res.json({
-        users: users.map((User) => (UserConstructor(User)))
+        users: User.map((User) => (UserConstructor(User)))
       })
     } else {
       res.status(404).json({ error: 'User not found' }); // Handle not found
