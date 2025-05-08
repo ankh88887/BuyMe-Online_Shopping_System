@@ -1,23 +1,23 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userProfileRoutes = require('./routes/userProfileRoutes');
-const connectDB = require('./db');
+const reviewRoutes = require('./routes/reviewRoutes');
 
-const fs = require('fs').promises;
-const cors = require('cors'); // To allow requests from the frontend
+const connectDB = require('./db');
 const app = express();
 app.use(cors()); // Enable CORS for all routes
 app.use(bodyParser.json());
 
 const port = 5005;
 
-app.use('/users', userRoutes);
-app.use('/products', productRoutes);
-app.use('/admin', adminRoutes);
-app.use('/userinfo', userProfileRoutes);
+// Use routes
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 connectDB();
 
@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
   res.send('Hello from server!');
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Start the server
+app.listen(port, async () => {
+  console.log(`Backend API is running on http://localhost:${port}`);
 });

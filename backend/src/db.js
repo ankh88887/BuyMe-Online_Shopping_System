@@ -4,8 +4,16 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/BuyMe'); 
-    console.log('MongoDB Connected');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/BuyMe', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+      .then(async () => {
+        console.log('MongoDB Connected');
+      })
+      .catch(err => {
+        console.error('Database connection error:', err);
+      });
   } catch (err) {
     console.error('MongoDB Connection Error:', err);
     process.exit(1);

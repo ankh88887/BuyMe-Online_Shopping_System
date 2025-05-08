@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react"
-import style from "./AddToCartBtn.module.css"
+import style from "./UpdateCartBtn.module.css"
 import {CartContext} from "./CartContext"
 
-export default function AddToCartBtn({ productID }) {
+export default function UpdateCartBtn({ productID }) {
 
     const {cartItems, setCartItems} = useContext(CartContext)
     let productIndexInCart = cartItems.findIndex((element)=>{
