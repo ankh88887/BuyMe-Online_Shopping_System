@@ -5,12 +5,14 @@ const {
   LoginUser,
   RegisterUser,
   ForgetPassword,
-  getUserByUsername
+  getUserByUsername,
+  getUserById
 } = require('../controllers/userController');
 
 router.post('/login', LoginUser);
 router.post('/register', RegisterUser);
 router.put('/forget-password/', ForgetPassword);
 router.get('/search/:userName', getUserByUsername);
+router.get('/:id', getUserById)
 
 module.exports = router;
