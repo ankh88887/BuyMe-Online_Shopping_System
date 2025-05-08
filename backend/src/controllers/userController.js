@@ -212,7 +212,7 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   const userID = req.params.id; // Get the UserID from the request parameters
   try {
-    const user = await Users.findOne({ userID: userID }); // Search for the user by userID
+    const user = await User.findOne({ userID: userID }); // Search for the user by userID
     if (user) {
       const constructedUser = UserConstructor(user); // Transform the user
       console.log('User found:', constructedUser); // Log the transformed User
