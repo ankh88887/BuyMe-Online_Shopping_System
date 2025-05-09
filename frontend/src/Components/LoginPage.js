@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import './style.css';
-import React, { useContext, useState } from "react";
+import { useEffect, useContext, useState } from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
 
 export default function Login() {
@@ -23,9 +23,6 @@ export default function Login() {
         const user = await response.json();
 
         setCurrentUser(user);
-        console.log('Current User:', user); 
-        console.log('Current User in user variable:', currentUser); 
-        console.log('User ID:', user.userID); 
         navigate('/');
       } else {
         const errorData = await response.json();
