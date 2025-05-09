@@ -7,7 +7,7 @@ export default function Home(props) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [products, setProducts] = useState()
-    const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
+    const { currentUser } = useContext(CurrentLoginUser);
 
 
     const fetchProduct = async () => {
