@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"
+import { useContext, useState, useEffect } from "react"
+import { CurrentLoginUser } from "./CurrentLoginUser";
 import ProductCell from "./ProductCell"
 import style from "./HomePage.module.css"
 
@@ -6,6 +7,8 @@ export default function Home(props) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [products, setProducts] = useState()
+    const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
+
 
     const fetchProduct = async () => {
         try {
@@ -52,19 +55,19 @@ export default function Home(props) {
 
     return (
         <div>
-            <h1 className={style.HomeName} >Welcome to BuyMe</h1>
+            <h1 className={style.HomeName} >Hello {currentUser.userName}! Welcome to BuyMe!</h1>
             <div
                 className={style.carousel}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <button className={style.carouselButton} onClick={prevSlide}>
+                <button className={style.carouselButton} key="prevSlideBtn" onClick={prevSlide}>
                     &#9664;
                 </button>
-                <div className={style.carouselTrack}>
+                <div className={style.carouselTrack} key="carousel" >
                     <ProductCell productJSON={products[currentIndex]} />
                 </div>
-                <button className={style.carouselButton} onClick={nextSlide}>
+                <button className={style.carouselButton} key="nextSlideBtn" onClick={nextSlide}>
                     &#9654;
                 </button>
             </div>
