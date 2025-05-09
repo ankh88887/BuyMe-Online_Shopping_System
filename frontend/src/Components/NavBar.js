@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState} from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
 import styles from './NavBar.module.css';
 
@@ -7,41 +7,6 @@ export default function NavBar() {
     const [keywords, setKeywords] = useState('');
     const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
     const navigate = useNavigate(); // Hook for navigation
-
-    //useEffect(() => {
-    // Mock admin user for testing
-    //     setCurrentUser({
-    //        userID: '12345',
-    //       userName: 'AdminUser',
-    //       email: 'admin@example.com',
-    //        isAdmin: true, // Set isAdmin to true for testing
-    //    });
-    // }, [setCurrentUser]);
-
-    useEffect(() => {
-        const fetchCurrentUser = async () => {
-            try {
-                // Fetch the current user from the backend or localStorage
-                const storedUser = localStorage.getItem('currentUser');
-                if (storedUser) {
-                    setCurrentUser(JSON.parse(storedUser)); // Set the user from localStorage
-                } else {
-                    // Optionally, fetch from an API if not found in localStorage
-                    const response = await fetch('http://localhost:5005/api/users/current');
-                    if (response.ok) {
-                        const user = await response.json();
-                        setCurrentUser(user); // Set the user from the API response
-                    } else {
-                        console.error('Failed to fetch current user');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching current user:', error);
-            }
-        };
-
-        fetchCurrentUser();
-    }, [setCurrentUser]);
 
     const logoutOnClick = () => {
         if (currentUser) {
