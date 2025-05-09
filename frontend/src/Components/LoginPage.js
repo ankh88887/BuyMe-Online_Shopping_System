@@ -40,8 +40,8 @@ export default function Login() {
         <div>
           <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" className="form-img" />
         </div>
-        <div className="content">
-          <h2 style={{margin:"40px 20px"}}><strong>Log in to BuyMe</strong></h2>
+        <div style={{width:"550px"}}>
+          <h2 style={{margin:"40px 0px", textAlign:"center"}}><strong>Log in to BuyMe</strong></h2>
           <form onSubmit={handleSubmit} >
             <input
               type="text"
@@ -64,10 +64,10 @@ export default function Login() {
               Login
             </button>
           </form>
-          <p className="account">
+          <p style={{margin:"10px 0px"}}>
             Forget Password? <Link to="/forgetpw">Click here</Link>
           </p>
-          <p className="account">
+          <p style={{margin:"10px 0px"}}>
             New User? <Link to="/signup">Sign up</Link>
           </p>
         </div>

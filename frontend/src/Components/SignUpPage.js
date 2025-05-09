@@ -50,55 +50,55 @@ export default function SignUp() {
     }
   };
 
-  return (
-    <div className="login-box">
-      <h1> </h1>
-      <div className="container">
-        <div className="main">
-          <div className="content">
-            <h2>Create BuyMe Account</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoFocus
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Enter Password Again"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              <button className="button" type="submit">
-                Sign up
-              </button>
-            </form>
-            <p className="account">
-              Existing User? <Link to="/login">Login</Link>
-            </p>
-          </div>
-          <div className="form-img">
-            <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" />
-          </div>
+  return (    
+    <div className="login-container">
+      <div className="login-box">
+        <div>
+          <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" className="form-img" />
+        </div>
+        <div style={{width:"550px"}}>
+          <h2 style={{margin:"40px 0px", textAlign:"center"}}><strong>Create BuyMe Account</strong></h2>
+          <form onSubmit={handleSubmit} >
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoFocus
+              className="form-input"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="form-input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+            <input
+              type="password"
+              placeholder="Enter Password Again"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+            <button className="form-button" type="submit">
+              Sign up
+            </button>
+          </form>
+          <p style={{margin:"10px 0px"}}>
+            Existing User? <Link to="/login">Login</Link>
+          </p>
         </div>
       </div>
     </div>
