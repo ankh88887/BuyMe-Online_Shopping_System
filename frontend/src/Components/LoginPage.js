@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import './style.css';
-import { useEffect, useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
 
 export default function Login() {
@@ -35,45 +35,41 @@ export default function Login() {
   };
 
   return (
-    <div className="login-box">
-      <h1></h1>
-      <div className="container">
-        <div className="main">
-          <div className="content">
-            <h2>Log in to BuyMe</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Username/Email"
-                value={userNameOrEmail}
-                onChange={(e) => setUserNameOrEmail(e.target.value)}
-                required
-                autoFocus
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button className="button" type="submit">
-                Login
-              </button>
-            </form>
-            {currentUser && (
-              <p>Logged in as: {currentUser.userName || currentUser.email} (User ID: {currentUser.userID})</p>
-            )}
-            <p className="account">
-              Forget Password? <Link to="/forgetpw">Click here</Link>
-            </p>
-            <p className="account">
-              New User? <Link to="/signup">Sign up</Link>
-            </p>
-          </div>
-          <div className="form-img">
-            <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" />
-          </div>
+    <div className="login-container">
+      <div className="login-box">
+        <div>
+          <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" className="form-img" />
+        </div>
+        <div className="content">
+          <h2 style={{margin:"40px 20px"}}><strong>Log in to BuyMe</strong></h2>
+          <form onSubmit={handleSubmit} >
+            <input
+              type="text"
+              placeholder="Username/Email"
+              value={userNameOrEmail}
+              onChange={(e) => setUserNameOrEmail(e.target.value)}
+              required
+              autoFocus
+              className="form-input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+            <button className="form-button" type="submit">
+              Login
+            </button>
+          </form>
+          <p className="account">
+            Forget Password? <Link to="/forgetpw">Click here</Link>
+          </p>
+          <p className="account">
+            New User? <Link to="/signup">Sign up</Link>
+          </p>
         </div>
       </div>
     </div>
