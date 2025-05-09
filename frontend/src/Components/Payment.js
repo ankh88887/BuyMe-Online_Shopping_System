@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
 import styles from './Payment.module.css';
 import { CurrentLoginUser } from './CurrentLoginUser';
+import { CartContext } from './CartContext';
 
 const API_BASE_URL = 'http://localhost:5005/api';
 
@@ -28,6 +29,7 @@ const PaymentPage = () => {
     const items = location.state?.items || new Map();
     
     const { currentUser } = useContext(CurrentLoginUser);
+    const { setCartItems } = useContext(CartContext);
     const userID = currentUser?.userID;
 
     useEffect(() => {
@@ -109,7 +111,7 @@ const PaymentPage = () => {
         }
 
         try {
-            const response = await axios.put(`${API_BASE_URL}/payments/${userID}`, {
+            await axios.put(`${API_BASE_URL}/payments/${userID}`, {
                 CDNo: tempCardInfo.CDNo.replace(/\s/g, ''),
                 expiryDate: tempCardInfo.expiryDate,
                 CVV: tempCardInfo.CVV,
@@ -155,6 +157,66 @@ const PaymentPage = () => {
         return isPersonalValid && isCardValid;
     };
 
+    // Function to update product stock after purchase
+    const updateProductStock = async (productID, quantity) => {
+        try {
+            // First get the current product information
+            const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
+            const product = productResponse.data;
+            
+            // Calculate new stock level
+            const currentStock = product.stock || 0;
+            const newStock = Math.max(0, currentStock - quantity);
+            
+            console.log(`Updating product ${productID} stock: ${currentStock} -> ${newStock}`);
+            
+            // Update the product stock
+            await axios.put(`${API_BASE_URL}/products/${productID}`, {
+                stock: newStock
+            });
+            
+            return true;
+        } catch (error) {
+            console.error(`Error updating stock for product ${productID}:`, error);
+            return false;
+        }
+    };
+
+    // Check if there's enough stock for all items
+    const validateStock = async () => {
+        let allInStock = true;
+        let outOfStockItems = [];
+        
+        for (const [productID, quantity] of items.entries()) {
+            try {
+                const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
+                const product = productResponse.data;
+                
+                if (!product.stock || product.stock < quantity) {
+                    allInStock = false;
+                    outOfStockItems.push({
+                        name: product.productName,
+                        requested: quantity,
+                        available: product.stock || 0
+                    });
+                }
+            } catch (error) {
+                console.error(`Error checking stock for product ${productID}:`, error);
+                allInStock = false;
+            }
+        }
+        
+        if (!allInStock) {
+            let errorMessage = 'Some items are out of stock:\n';
+            outOfStockItems.forEach(item => {
+                errorMessage += `${item.name}: requested ${item.requested}, only ${item.available} available\n`;
+            });
+            alert(errorMessage);
+        }
+        
+        return allInStock;
+    };
+
     const handleConfirmPayment = async () => {
         if (!isFormValid()) {
             alert('Please fill in all required fields (username, email, and card details) before confirming payment.');
@@ -162,6 +224,26 @@ const PaymentPage = () => {
         }
 
         try {
+            // First, validate that all items are in stock
+            const stockValid = await validateStock();
+            if (!stockValid) {
+                return; // Stop the payment process if items are out of stock
+            }
+            
+            // Prepare a list of stock update operations
+            const stockUpdatePromises = [];
+            for (const [productID, quantity] of items.entries()) {
+                stockUpdatePromises.push(updateProductStock(productID, quantity));
+            }
+            
+            // Execute all stock updates in parallel
+            const stockUpdateResults = await Promise.all(stockUpdatePromises);
+            
+            // Check if any stock updates failed
+            if (stockUpdateResults.includes(false)) {
+                console.warn('Some stock updates failed, but continuing with payment');
+            }
+
             // Update the existing active cart
             const currentDate = new Date().toISOString();
             await axios.put(`${API_BASE_URL}/carts/${userID}`, {
@@ -180,6 +262,9 @@ const PaymentPage = () => {
                 totalCost: 0,
                 isActive: true,
             });
+            
+            // Clear the CartContext to ensure the UI shows an empty cart
+            setCartItems([]);
 
             alert('Payment confirmed successfully!');
             navigate('/history');
@@ -201,8 +286,9 @@ const PaymentPage = () => {
                         <h3>Personal Info</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Username *</label>
+                                <label htmlFor="username">Username *</label>
                                 <input
+                                    id="username"
                                     type="text"
                                     value={personalInfo.userName}
                                     className={styles.formInput}
@@ -210,8 +296,9 @@ const PaymentPage = () => {
                                 />
                             </div>
                             <div className={styles.formGroup}>
-                                <label>Address</label>
+                                <label htmlFor="address">Address</label>
                                 <input
+                                    id="address"
                                     type="text"
                                     value={personalInfo.address}
                                     className={styles.formInput}
@@ -221,8 +308,9 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Email *</label>
+                                <label htmlFor="email">Email *</label>
                                 <input
+                                    id="email"
                                     type="text"
                                     value={personalInfo.email}
                                     className={styles.formInput}
@@ -241,9 +329,10 @@ const PaymentPage = () => {
                         <h3>Card Info</h3>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Card holder's name *</label>
+                                <label htmlFor="cardOwner">Card holder's name *</label>
                                 {editCardMode ? (
                                     <input
+                                        id="cardOwner"
                                         type="text"
                                         name="CardOwner"
                                         value={tempCardInfo.CardOwner}
@@ -252,6 +341,7 @@ const PaymentPage = () => {
                                     />
                                 ) : (
                                     <input
+                                        id="cardOwner"
                                         type="text"
                                         value={cardInfo.CardOwner}
                                         className={styles.formInput}
@@ -262,9 +352,10 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Card ID *</label>
+                                <label htmlFor="cardID">Card ID *</label>
                                 {editCardMode ? (
                                     <input
+                                        id="cardID"
                                         type="text"
                                         name="CDNo"
                                         value={tempCardInfo.CDNo}
@@ -284,10 +375,11 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label>Expiry date *</label>
+                                <label htmlFor="expiryDate">Expiry date *</label>
                                 <div className={styles.expiryGroup}>
                                     {editCardMode ? (
                                         <input
+                                            id="expiryDate"
                                             type="text"
                                             name="expiryDate"
                                             value={tempCardInfo.expiryDate}
@@ -307,9 +399,10 @@ const PaymentPage = () => {
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
-                                <label>CVV *</label>
+                                <label htmlFor="cvv">CVV *</label>
                                 {editCardMode ? (
                                     <input
+                                        id="cvv"
                                         type="text"
                                         name="CVV"
                                         value={tempCardInfo.CVV}
@@ -320,6 +413,7 @@ const PaymentPage = () => {
                                     />
                                 ) : (
                                     <input
+                                        id="cvv"
                                         type="text"
                                         value={cardInfo.CVV}
                                         className={styles.formInput}

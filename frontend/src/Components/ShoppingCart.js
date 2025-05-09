@@ -63,7 +63,7 @@ const ShoppingCart = () => {
         }
     }, [cartItems, userID, navigate]);
 
-    // Load initial cart data when component mounts
+    // Load initial cart data when component mounts or when navigated to
     useEffect(() => {
         const loadInitialCart = async () => {
             if (!userID) {
@@ -71,6 +71,7 @@ const ShoppingCart = () => {
                 return;
             }
             
+            setLoading(true);
             try {
                 const cartResponse = await axios.get(`${API_BASE_URL}/carts/active/${userID}`);
                 const cart = cartResponse.data;
@@ -81,22 +82,42 @@ const ShoppingCart = () => {
                     for (const [productID, quantity] of Object.entries(cart.items)) {
                         cartItemsArray.push({
                             id: productID,
-                            quantity: quantity
+                            quantity: parseInt(quantity, 10)
                         });
                     }
                     
-                    // Only set initial cart items if we don't already have items
-                    if (cartItems.length === 0) {
-                        setCartItems(cartItemsArray);
-                    }
+                    // Always update cart items from the database, regardless of current state
+                    setCartItems(cartItemsArray);
+                } else {
+                    // If no active cart or empty items, ensure the cart is empty
+                    setCartItems([]);
                 }
             } catch (error) {
                 console.error('Error loading initial cart:', error);
+                // If there's an error, still clear the cart to prevent stale data
+                setCartItems([]);
+            } finally {
+                setLoading(false);
             }
         };
         
+        // Always load the cart when component mounts or when focusing the page
         loadInitialCart();
-    }, [userID, navigate, setCartItems, cartItems.length]);
+
+        // Add an event listener to reload cart data when the page gets focus
+        // This ensures cart is refreshed when navigating back to it after payment
+        const handleFocus = () => {
+            loadInitialCart();
+        };
+        
+        window.addEventListener('focus', handleFocus);
+        
+        // Clean up event listener on component unmount
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+        
+    }, [userID, navigate, setCartItems]); // Removed cartItems.length dependency
 
     const handleQuantityChange = (id, delta) => {
         setCartItems(prevItems => {
@@ -120,6 +141,37 @@ const ShoppingCart = () => {
             return updatedItems;
         });
     };
+
+    // Function to synchronize cart with backend after quantity changes
+    const syncCartWithBackend = async () => {
+        if (!userID) return;
+        
+        try {
+            // Convert cart items to the format expected by the API
+            const cartItemsObject = {};
+            cartItems.forEach(item => {
+                cartItemsObject[item.id] = item.quantity;
+            });
+            
+            // Update the active cart in the database
+            await axios.put(`${API_BASE_URL}/carts/${userID}`, {
+                items: cartItemsObject,
+                totalCost: parseFloat(calculateTotal()),
+                isActive: true
+            });
+            
+            console.log('Cart synchronized with backend');
+        } catch (error) {
+            console.error('Error synchronizing cart with backend:', error);
+        }
+    };
+
+    // Sync cart with backend whenever cart items change
+    useEffect(() => {
+        if (cartItems.length > 0) {
+            syncCartWithBackend();
+        }
+    }, [cartItems]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const calculateTotal = () => {
         return cartWithDetails.reduce((sum, item) => sum + item.quantity * item.cost, 0).toFixed(2);
@@ -165,9 +217,8 @@ const ShoppingCart = () => {
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                                 <button
-                                                    className={item.quantity === 1 ? styles.BtnDisable : styles.BtnAble}
+                                                    className={styles.BtnAble}
                                                     onClick={() => handleQuantityChange(item.id, -1)}
-                                                    disabled={item.quantity === 1}
                                                 >
                                                     ⊖
                                                 </button>

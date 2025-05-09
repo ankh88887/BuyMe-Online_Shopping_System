@@ -31,28 +31,56 @@ const PurchaseHistory = () => {
             setError(null);
             try {
                 const response = await axios.get(`${API_BASE_URL}/carts/${userID}`);
-                const carts = response.data.filter(cart => cart.purchaseDate && !cart.isActive);
-                const detailedPurchases = await Promise.all(carts.map(async (cart) => {
-                    const items = await Promise.all(Object.entries(cart.items).map(async ([productID, quantity]) => {
-                        const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
-                        const reviewResponse = await axios.get(`${API_BASE_URL}/reviews/check?userID=${userID}&productID=${productID}`);
-                        return {
-                            productID,
-                            productName: productResponse.data.productName || `Product ${productID} (Not Found)`,
-                            quantity,
-                            reviewExists: reviewResponse.data.exists
-                        };
-                    }));
+                // Sort carts by purchaseDate (newest to oldest)
+                const carts = response.data
+                    .filter(cart => cart.purchaseDate && !cart.isActive)
+                    .sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+                    
+                const fetchItemDetails = async (productID, quantity) => {
+                    const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
+                    const reviewResponse = await axios.get(`${API_BASE_URL}/reviews/check?userID=${userID}&productID=${productID}`);
+                    return {
+                        productID,
+                        productName: productResponse.data.productName || `Product ${productID} (Not Found)`,
+                        quantity,
+                        reviewExists: reviewResponse.data.exists
+                    };
+                };
+
+                const fetchCartItems = async (cart) => {
+                    const itemEntries = Object.entries(cart.items);
+                    return await Promise.all(itemEntries.map(fetchItemDetailsForCart));
+                };
+
+                const fetchItemDetailsForCart = async ([productID, quantity]) => {
+                    return await fetchItemDetails(productID, quantity);
+                };
+
+                const fetchCartDetails = async (cart) => {
+                    const items = await fetchCartItems(cart);
                     return { ...cart, items };
-                }));
-                setPurchases(detailedPurchases);
-                const initialReviewExists = detailedPurchases.reduce((acc, purchase) => {
-                    purchase.items.forEach(item => {
-                        acc[`${purchase.CartID}-${item.productID}`] = item.reviewExists;
-                    });
+                };
+
+                const fetchDetailedPurchases = async (carts) => {
+                    return await Promise.all(carts.map(fetchCartDetails));
+                };
+
+                const mapReviewExists = (detailedPurchases) => {
+                    return detailedPurchases.reduce(mapPurchaseToReviewExists, {});
+                };
+
+                const mapPurchaseToReviewExists = (acc, purchase) => {
+                    purchase.items.forEach(mapItemToReviewExists.bind(null, purchase, acc));
                     return acc;
-                }, {});
-                setReviewExists(initialReviewExists);
+                };
+
+                const mapItemToReviewExists = (purchase, acc, item) => {
+                    acc[`${purchase.CartID}-${item.productID}`] = item.reviewExists;
+                };
+
+                const detailedPurchases = await fetchDetailedPurchases(carts);
+                setPurchases(detailedPurchases);
+                setReviewExists(mapReviewExists(detailedPurchases));
             } catch (error) {
                 console.error('Error fetching purchase history or reviews:', error);
                 setError('Failed to load purchase history or reviews. Please try again later.');
