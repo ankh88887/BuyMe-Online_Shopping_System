@@ -61,20 +61,20 @@ export default function Home(props) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <button className={style.carouselButton} key="prevSlideBtn" onClick={prevSlide}>
+                <button className={style.carouselButton} onClick={prevSlide}>
                     &#9664;
                 </button>
-                <div className={style.carouselTrack} key="carousel" >
+                <div className={style.carouselTrack} >
                     <ProductCell productJSON={products[currentIndex]} />
                 </div>
-                <button className={style.carouselButton} key="nextSlideBtn" onClick={nextSlide}>
+                <button className={style.carouselButton} onClick={nextSlide}>
                     &#9654;
                 </button>
             </div>
 
             <div className={style.scrollContainer}>
                 {products.map((productItem) => (
-                    <ProductCell key={productItem.id} productJSON={productItem} />
+                    <ProductCell key={productItem.productID} productJSON={productItem} />
                 ))}
             </div>
         </div>
