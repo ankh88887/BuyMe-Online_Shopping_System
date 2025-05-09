@@ -21,12 +21,6 @@ export default function NavBar() {
         setKeywords(event.target.value);
     };
 
-    const handleKeyDown = (event) => {
-        if (event.key === 'Enter') {
-            window.location.href = `/search/${keywords}`;
-        }
-    };
-
     return (
         <nav className={styles.nav}>
             {/* Left Section */}
@@ -44,10 +38,9 @@ export default function NavBar() {
                     className={styles.searchBar}
                     value={keywords}
                     onChange={handleKeywordsChange}
-                    onKeyDown={handleKeyDown}
                 />
                 <Link to={'/search/' + keywords} className={styles.imgButton}>
-                    <img src={process.env.PUBLIC_URL + '/Images/search.png'} alt="Search" className={styles.imgIcon} />
+                    <img src={process.env.PUBLIC_URL + '/Images/search.png'} alt="Search" className={styles.imgIcon} onClick={()=>{setKeywords("") }} />
                 </Link>
             </div>
 
@@ -59,7 +52,7 @@ export default function NavBar() {
                 )}
                 <button onClick={logoutOnClick} className={styles.navButton}>Logout</button>
                 <Link to="/cart" className={styles.imgButton}>
-                    <img src={process.env.PUBLIC_URL + '/Images/shoppingCart.png'} alt="Shopping Cart" className={styles.imgIcon} />
+                    <img src={process.env.PUBLIC_URL + '/Images/shoppingCart.png'} alt="Shopping Cart" className={styles.imgIcon}/>
                 </Link>
             </div>
         </nav>
