@@ -7,7 +7,7 @@ export default function Login() {
   const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
+  const { setCurrentUser } = useContext(CurrentLoginUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

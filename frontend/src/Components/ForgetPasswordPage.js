@@ -55,54 +55,55 @@ export default function ForgetPasswordPage() {
     }
   };
 
-  return (
-    <div className="login-box">
-      <h1></h1>
-      <div className="container">
-        <div className="main">
-          <div className="content">
-            <h2>Change Password</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Current username"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                required
-                autoFocus
-              />
-              <input
-                type="email"
-                placeholder="Current email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="New Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Enter Password Again"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              <button className="button" type="submit">
-                Change Password
-              </button>
-            </form>
-            <p className="account">
-              Login?<Link to="/login"> Click here </Link>
-            </p>
-          </div>
-          <div className="form-img">
-            <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" />
-          </div>
+  return (    
+    <div className="login-container">
+      <div className="login-box">
+        <div>
+          <img src="/Images/BuyMe_Logo_Transparent.png" alt="BuyMe Logo" className="form-img" />
+        </div>
+        <div style={{width:"550px"}}>
+          <h2 style={{margin:"40px 0px", textAlign:"center"}}><strong>Change Password</strong></h2>
+          <form onSubmit={handleSubmit} >
+            <input
+              type="text"
+              placeholder="Current username"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              required
+              autoFocus
+              className="form-input"
+            />
+            <input
+              type="email"
+              placeholder="Current email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="form-input"
+            />
+            <input
+              type="password"
+              placeholder="New Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+            <input
+              type="password"
+              placeholder="Enter Password Again"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+            <button className="form-button" type="submit">
+              Change Password
+            </button>
+          </form>
+          <p style={{margin:"10px 0px"}}>
+            Login? <Link to="/login">Click here</Link>
+          </p>
         </div>
       </div>
     </div>

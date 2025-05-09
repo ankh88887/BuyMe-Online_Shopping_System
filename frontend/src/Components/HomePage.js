@@ -30,12 +30,12 @@ export default function Home(props) {
     }, []);
 
     const nextSlide = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+        setCurrentIndex((currentIndex) => (currentIndex + 1) % products.length);
     }
 
     const prevSlide = () => {
-        setCurrentIndex((prevIndex) =>
-            prevIndex === 0 ? products.length - 1 : prevIndex - 1
+        setCurrentIndex((currentIndex) =>
+            currentIndex === 0 ? products.length - 1 : currentIndex - 1
         )
     }
 
