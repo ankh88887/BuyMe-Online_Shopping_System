@@ -3,21 +3,11 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
-// const auth = require('../middleware/auth'); // Assuming you have an auth middleware
 
-// // Get current user profile
-// router.get('/profile', async (req, res) => {
-//   try {
-//     const user = await User.findOne({ userID: req.user.userID });
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: 'User not found' });
-//     }
-
-
-// Get user profile by ID (for testing)
+// Get user profile by ID
 router.get('/profile/:id', async (req, res) => {
   try {
-    // For testing: override the authenticated user with the requested ID
+    // Get the user ID from the request parameters
     const userID = req.params.id;
       
     const user = await User.findOne({ userID: userID });
@@ -69,12 +59,13 @@ router.post('/profile', async (req, res) => {
   try {
     const { userID, username, email, address, cardName, cardNumber, expiryMonth, expiryYear, cvv } = req.body;
 
-        
-    // For testing: get userID from request body or default to "1"
-    const userId = userID || "1";
+    // Validate required fields
+    if (!userID) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
     
     // Find user
-    const user = await User.findOne({ userID: userId });
+    const user = await User.findOne({ userID: userID });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -106,21 +97,24 @@ router.post('/profile', async (req, res) => {
     }
 
     // Update address if provided
-    if (address) {
+    if (address !== undefined) {
       user.address = address;
     }
 
     // Save user changes
     await user.save();
 
-    // Update or create payment information
+    // Update or create payment information if all payment fields are provided
     if (cardName && cardNumber && expiryMonth && expiryYear && cvv) {
-      let payment = await Payment.findOne({ userID: userId });
+      let payment = await Payment.findOne({ userID: userID });
+      
+      // Remove any spaces from card number
+      const cleanCardNumber = cardNumber.replace(/\s/g, '');
       
       if (payment) {
         // Update existing payment
         payment.CardOwner = cardName;
-        payment.CDNo = parseInt(cardNumber.replace(/\s/g, ''));
+        payment.CDNo = parseInt(cleanCardNumber);
         payment.expiryDate = `${expiryMonth}/${expiryYear}`;
         payment.CVV = parseInt(cvv);
       } else {
@@ -128,7 +122,7 @@ router.post('/profile', async (req, res) => {
         payment = new Payment({
           userID: user.userID,
           CardOwner: cardName,
-          CDNo: parseInt(cardNumber.replace(/\s/g, '')),
+          CDNo: parseInt(cleanCardNumber),
           expiryDate: `${expiryMonth}/${expiryYear}`,
           CVV: parseInt(cvv)
         });
@@ -147,10 +141,14 @@ router.post('/profile', async (req, res) => {
 // Change password
 router.post('/change-password', async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { userID, currentPassword, newPassword } = req.body;
+    
+    if (!userID) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
     
     // Find user
-    const user = await User.findOne({ userID: req.user.userID });
+    const user = await User.findOne({ userID: userID });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }

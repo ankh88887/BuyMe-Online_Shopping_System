@@ -33,6 +33,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/userinfo', userProfileRoutes);
 
 connectDB();
 
