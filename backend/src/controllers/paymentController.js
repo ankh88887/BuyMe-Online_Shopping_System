@@ -5,7 +5,6 @@ const Payment = require('../models/Payment');
 const ENCRYPTION_KEY = Buffer.from('1234567890123456', 'utf8'); // Exactly 16 bytes
 const IV = Buffer.from('1234567890abcdef', 'utf8'); // Exactly 16 bytes
 
-// Verify key length
 if (ENCRYPTION_KEY.length !== 16) {
     throw new Error('ENCRYPTION_KEY must be 16 bytes for AES-128');
 }

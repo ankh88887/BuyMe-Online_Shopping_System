@@ -51,12 +51,12 @@ exports.getReviewsByProductsId = async (req, res) => {
         console.error('Error fetching reviews by product ID:', error); // Log the error
         res.status(500).json({ error: 'Server error' });
     }
-};const Review = require('../models/Review');
+};
 
 exports.checkReviewByUserID = async (req, res) => {
     try {
         const { userID, productID } = req.query;
-        const existingReview = await Review.findOne({ userID, ProductID: productID });
+        const existingReview = await Review.findOne({ userID, ProductID: productID });//Find review by product ID and UserID
         res.json({ exists: !!existingReview });
     } catch (error) {
         console.error('Error checking review:', error);

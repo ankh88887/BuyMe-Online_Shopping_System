@@ -4,7 +4,6 @@ const createCart = async (req, res) => {
     try {
         const { CartID, userID, items, totalCost, purchaseDate, isActive } = req.body;
 
-        // Validate required fields
         if (!CartID || !userID || !items || totalCost === undefined) {
             return res.status(400).json({ error: 'Missing required fields: CartID, userID, items, and totalCost are required' });
         }
@@ -15,7 +14,7 @@ const createCart = async (req, res) => {
             purchaseDate: purchaseDate || null,
             items,
             totalCost,
-            isActive: isActive !== undefined ? isActive : true // Default to true if not specified
+            isActive: isActive !== undefined ? isActive : true // Default to true when created
         });
         await cart.save();
         res.status(201).send(cart);

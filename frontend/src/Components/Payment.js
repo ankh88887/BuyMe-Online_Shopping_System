@@ -23,6 +23,14 @@ const PaymentPage = () => {
     });
     const [editCardMode, setEditCardMode] = useState(false);
     const [tempCardInfo, setTempCardInfo] = useState({ ...cardInfo });
+    const [errors, setErrors] = useState({
+        CardOwner: '',
+        CDNo: '',
+        expiryDate: '',
+        CVV: ''
+    });
+    const [isProcessing, setIsProcessing] = useState(false);
+    
     const location = useLocation();
     const navigate = useNavigate();
     const totalCost = location.state?.totalCost || '1500.00';
@@ -84,32 +92,101 @@ const PaymentPage = () => {
         fetchPaymentInfo();
     }, [userID, navigate]);
 
+    // Format card number as user types (4-digit groups)
+    const formatCardNumber = (value) => {
+        const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        const matches = v.match(/\d{1,4}/g);
+        return matches ? matches.join(' ').substr(0, 19) : '';
+    };
+
+    // Format expiry date as MM/YY
+    const formatExpiryDate = (value) => {
+        const cleanValue = value.replace(/[^\d]/g, '').substring(0, 4);
+        if (cleanValue.length > 2) {
+            return `${cleanValue.substring(0, 2)}/${cleanValue.substring(2)}`;
+        }
+        return cleanValue;
+    };
+
     const handleCardInputChange = (e) => {
         const { name, value } = e.target;
-        setTempCardInfo(prev => ({ ...prev, [name]: value }));
+        
+        // Clear the error for this field as user is typing
+        setErrors(prev => ({ ...prev, [name]: '' }));
+        
+        if (name === 'CDNo') {
+            const formattedValue = formatCardNumber(value);
+            setTempCardInfo(prev => ({ ...prev, [name]: formattedValue }));
+        } else if (name === 'expiryDate') {
+            setTempCardInfo(prev => ({ ...prev, [name]: formatExpiryDate(value) }));
+        } else if (name === 'CVV') {
+            // Only allow numbers for CVV
+            const cvvValue = value.replace(/[^\d]/g, '').substring(0, 4);
+            setTempCardInfo(prev => ({ ...prev, [name]: cvvValue }));
+        } else {
+            setTempCardInfo(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const validateCardInfo = () => {
+        let newErrors = {
+            CardOwner: '',
+            CDNo: '',
+            expiryDate: '',
+            CVV: ''
+        };
+        let hasErrors = false;
+        
+        // Validate card owner name
+        if (!tempCardInfo.CardOwner.trim()) {
+            newErrors.CardOwner = 'Card holder name is required';
+            hasErrors = true;
+        }
+        
+        // Validate card number
+        const cardNumberDigits = tempCardInfo.CDNo.replace(/\s/g, '');
+        if (!cardNumberDigits || cardNumberDigits.length < 15 || cardNumberDigits.length > 16) {
+            newErrors.CDNo = 'Please enter a valid card number';
+            hasErrors = true;
+        }
+        
+        // Validate expiry date
+        if (!tempCardInfo.expiryDate) {
+            newErrors.expiryDate = 'Expiry date is required';
+            hasErrors = true;
+        } else {
+            const [month, year] = tempCardInfo.expiryDate.split('/');
+            const monthNum = parseInt(month, 10);
+            const yearNum = parseInt(year, 10);
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear() % 100;
+            const currentMonth = currentDate.getMonth() + 1;
+
+            if (!month || !year || monthNum < 1 || monthNum > 12) {
+                newErrors.expiryDate = 'Please enter a valid month (01-12)';
+                hasErrors = true;
+            } else if (yearNum < currentYear || (yearNum === currentYear && monthNum < currentMonth)) {
+                newErrors.expiryDate = 'Card has expired';
+                hasErrors = true;
+            }
+        }
+        
+        // Validate CVV
+        if (!tempCardInfo.CVV || !/^\d{3,4}$/.test(tempCardInfo.CVV)) {
+            newErrors.CVV = 'Please enter a valid security code';
+            hasErrors = true;
+        }
+        
+        setErrors(newErrors);
+        return !hasErrors;
     };
 
     const handleSaveCardChanges = async () => {
-        if (!tempCardInfo.CardOwner) {
-            alert('Card holder name is required');
-            return;
-        }
-        if (!/^\d{4} \d{4} \d{4} \d{4}$/.test(tempCardInfo.CDNo)) {
-            alert('Card ID must be 16 digits in the format XXXX XXXX XXXX XXXX');
-            return;
-        }
-        const [month, year] = tempCardInfo.expiryDate.split('/');
-        const monthNum = parseInt(month, 10);
-        const yearNum = parseInt(year, 10);
-        if (!month || !year || monthNum < 1 || monthNum > 12 || yearNum < 0 || yearNum > 99) {
-            alert('Expiry date must be valid (MM/YY, month 01-12, year 00-99)');
-            return;
-        }
-        if (!tempCardInfo.CVV || !/^\d{3,4}$/.test(tempCardInfo.CVV)) {
-            alert('CVV must be 3 or 4 digits');
+        if (!validateCardInfo()) {
             return;
         }
 
+        setIsProcessing(true);
         try {
             await axios.put(`${API_BASE_URL}/payments/${userID}`, {
                 CDNo: tempCardInfo.CDNo.replace(/\s/g, ''),
@@ -123,12 +200,20 @@ const PaymentPage = () => {
         } catch (error) {
             console.error('Error updating payment info:', error);
             alert('Failed to update payment information');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const handleCancelCardEdit = () => {
         setTempCardInfo({ ...cardInfo });
         setEditCardMode(false);
+        setErrors({
+            CardOwner: '',
+            CDNo: '',
+            expiryDate: '',
+            CVV: ''
+        });
     };
 
     const handleEditCard = () => {
@@ -223,10 +308,12 @@ const PaymentPage = () => {
             return;
         }
 
+        setIsProcessing(true);
         try {
             // First, validate that all items are in stock
             const stockValid = await validateStock();
             if (!stockValid) {
+                setIsProcessing(false);
                 return; // Stop the payment process if items are out of stock
             }
             
@@ -271,7 +358,19 @@ const PaymentPage = () => {
         } catch (error) {
             console.error('Error confirming payment:', error);
             alert('Failed to confirm payment');
+        } finally {
+            setIsProcessing(false);
         }
+    };
+
+    // Helper function to create an error message element if there's an error
+    const renderError = (errorMessage) => {
+        if (!errorMessage) return null;
+        return (
+            <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                {errorMessage}
+            </div>
+        );
     };
 
     return (
@@ -331,14 +430,19 @@ const PaymentPage = () => {
                             <div className={styles.formGroup}>
                                 <label htmlFor="cardOwner">Card holder's name *</label>
                                 {editCardMode ? (
-                                    <input
-                                        id="cardOwner"
-                                        type="text"
-                                        name="CardOwner"
-                                        value={tempCardInfo.CardOwner}
-                                        onChange={handleCardInputChange}
-                                        className={styles.formInput}
-                                    />
+                                    <>
+                                        <input
+                                            id="cardOwner"
+                                            type="text"
+                                            name="CardOwner"
+                                            value={tempCardInfo.CardOwner}
+                                            onChange={handleCardInputChange}
+                                            className={styles.formInput}
+                                            placeholder="Enter name"
+                                            style={errors.CardOwner ? {borderColor: 'red'} : {}}
+                                        />
+                                        {renderError(errors.CardOwner)}
+                                    </>
                                 ) : (
                                     <input
                                         id="cardOwner"
@@ -352,17 +456,21 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label htmlFor="cardID">Card ID *</label>
+                                <label htmlFor="cardID">Card Number *</label>
                                 {editCardMode ? (
-                                    <input
-                                        id="cardID"
-                                        type="text"
-                                        name="CDNo"
-                                        value={tempCardInfo.CDNo}
-                                        onChange={handleCardInputChange}
-                                        className={styles.formInput}
-                                        placeholder="XXXX XXXX XXXX XXXX"
-                                    />
+                                    <>
+                                        <input
+                                            id="cardID"
+                                            type="text"
+                                            name="CDNo"
+                                            value={tempCardInfo.CDNo}
+                                            onChange={handleCardInputChange}
+                                            className={styles.formInput}
+                                            placeholder="XXXX XXXX XXXX XXXX"
+                                            style={errors.CDNo ? {borderColor: 'red'} : {}}
+                                        />
+                                        {renderError(errors.CDNo)}
+                                    </>
                                 ) : (
                                     <input
                                         type="text"
@@ -375,19 +483,23 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label htmlFor="expiryDate">Expiry date *</label>
+                                <label htmlFor="expiryDate">Expiry date (MM/YY) *</label>
                                 <div className={styles.expiryGroup}>
                                     {editCardMode ? (
-                                        <input
-                                            id="expiryDate"
-                                            type="text"
-                                            name="expiryDate"
-                                            value={tempCardInfo.expiryDate}
-                                            onChange={handleCardInputChange}
-                                            className={styles.formInput}
-                                            placeholder="MM/YY"
-                                            maxLength="5"
-                                        />
+                                        <>
+                                            <input
+                                                id="expiryDate"
+                                                type="text"
+                                                name="expiryDate"
+                                                value={tempCardInfo.expiryDate}
+                                                onChange={handleCardInputChange}
+                                                className={styles.formInput}
+                                                placeholder="MM/YY"
+                                                maxLength="5"
+                                                style={errors.expiryDate ? {borderColor: 'red'} : {}}
+                                            />
+                                            {renderError(errors.expiryDate)}
+                                        </>
                                     ) : (
                                         <input
                                             type="text"
@@ -399,18 +511,22 @@ const PaymentPage = () => {
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
-                                <label htmlFor="cvv">CVV *</label>
+                                <label htmlFor="cvv">Security Code (CVV) *</label>
                                 {editCardMode ? (
-                                    <input
-                                        id="cvv"
-                                        type="text"
-                                        name="CVV"
-                                        value={tempCardInfo.CVV}
-                                        onChange={handleCardInputChange}
-                                        className={styles.formInput}
-                                        placeholder="CVV"
-                                        maxLength="4"
-                                    />
+                                    <>
+                                        <input
+                                            id="cvv"
+                                            type="text"
+                                            name="CVV"
+                                            value={tempCardInfo.CVV}
+                                            onChange={handleCardInputChange}
+                                            className={styles.formInput}
+                                            placeholder="XXX"
+                                            maxLength="4"
+                                            style={errors.CVV ? {borderColor: 'red'} : {}}
+                                        />
+                                        {renderError(errors.CVV)}
+                                    </>
                                 ) : (
                                     <input
                                         id="cvv"
@@ -424,8 +540,20 @@ const PaymentPage = () => {
                         </div>
                         {editCardMode ? (
                             <div className={styles.actionButtons}>
-                                <button className={styles.btnCancel} onClick={handleCancelCardEdit}>Cancel</button>
-                                <button className={styles.btnSave} onClick={handleSaveCardChanges}>Save</button>
+                                <button 
+                                    className={styles.btnCancel} 
+                                    onClick={handleCancelCardEdit}
+                                    disabled={isProcessing}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    className={styles.btnSave} 
+                                    onClick={handleSaveCardChanges}
+                                    disabled={isProcessing}
+                                >
+                                    {isProcessing ? 'Saving...' : 'Save'}
+                                </button>
                             </div>
                         ) : (
                             <button
@@ -450,9 +578,9 @@ const PaymentPage = () => {
                         <button
                             className={styles.btnConfirm}
                             onClick={handleConfirmPayment}
-                            disabled={!isFormValid()}
+                            disabled={!isFormValid() || isProcessing}
                         >
-                            Confirm
+                            {isProcessing ? 'Processing...' : 'Confirm Payment'}
                         </button>
                     </div>
                 </div>

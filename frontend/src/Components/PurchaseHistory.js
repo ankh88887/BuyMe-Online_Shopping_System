@@ -122,8 +122,7 @@ const PurchaseHistory = () => {
                 comment,
                 rate
             });
-            alert('Review submitted successfully!');
-            setReviewExists(prev => ({ ...prev, [`${orderID}-${productID}`]: true }));
+            
             const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
             const currentRateCount = productResponse.data.rateCount || 0;
             const currentTotalRate = productResponse.data.totalRate || 0;
@@ -131,6 +130,12 @@ const PurchaseHistory = () => {
                 rateCount: currentRateCount + 1,
                 totalRate: currentTotalRate + rate
             });
+            
+            alert('Review submitted successfully!');
+            
+            // Refresh the page to prevent double submission
+            window.location.reload();
+            
         } catch (error) {
             console.error('Error submitting review:', error);
             alert('Failed to submit review. Please try again.');
