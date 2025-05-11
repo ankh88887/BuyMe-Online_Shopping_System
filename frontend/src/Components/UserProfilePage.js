@@ -95,16 +95,15 @@ const UserProfilePage = () => {
       // Validate CVV
       if (!cvv) {
         newErrors.cvv = "CVV is required";
-      } else if (cvv.length < 3) {
-        newErrors.cvv = "CVV must be 3 digits";
+      } else if (cvv.length < 3 || cvv.length > 4) {
+        newErrors.cvv = "CVV must be 3 or 4 digits";
       }
-      
+ 
       // Validate expiry date is in the future
       if (expiryMonth && expiryYear) {
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits of year
         const currentMonth = currentDate.getMonth() + 1; // getMonth() is 0-indexed
-        
         const month = parseInt(expiryMonth);
         const year = parseInt(expiryYear);
         
@@ -218,16 +217,30 @@ const UserProfilePage = () => {
       // Only allow numbers and limit to 2 digits
       newValue = value.replace(/\D/g, '').slice(0, 2);
       delete newErrors.expiryYear;
-    } 
+    }
     else if (name === "cvv") {
-      // Only allow numbers and limit to 3 digits
-      newValue = value.replace(/\D/g, '').slice(0, 3);
+      // Only allow numbers and limit to 4 digits, but preserve leading zeros
+      newValue = value.replace(/[^0-9]/g, '').slice(0, 4);
       if (newValue && newValue.length < 3) {
-        newErrors.cvv = "CVV must be 3 digits";
+        newErrors.cvv = "CVV must be 3 or 4 digits";
       } else {
         delete newErrors.cvv;
       }
     }
+
+    // else if (name === "cvv") {
+    //   // Only allow numbers and limit to 4 digits
+    //   newValue = value.replace(/\D/g, '').slice(0, 4); // This should be slice(0, 4)
+    //   if (newValue && newValue.length < 3) {
+    //     newErrors.cvv = "CVV must be 3 or 4 digits";
+    //   } else {
+    //     delete newErrors.cvv;
+    //   }
+    // }
+    
+
+
+
     
     setPaymentInfo(prev => ({
       ...prev,
@@ -484,9 +497,10 @@ const UserProfilePage = () => {
                         name="cvv"
                         value={paymentInfo.cvv}
                         onChange={handlePaymentChange}
-                        placeholder="123"
-                        maxLength={3}
+                        placeholder="123 or 1234"
+                        maxLength={4}
                       />
+          
                       <button 
                         type="button" 
                         className="btn btn-outline-secondary"
