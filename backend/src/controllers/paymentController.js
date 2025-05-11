@@ -1,45 +1,17 @@
-const crypto = require('crypto');
 const Payment = require('../models/Payment');
-
-
-const ENCRYPTION_KEY = Buffer.from('1234567890123456', 'utf8'); // Exactly 16 bytes
-const IV = Buffer.from('1234567890abcdef', 'utf8'); // Exactly 16 bytes
-
-if (ENCRYPTION_KEY.length !== 16) {
-    throw new Error('ENCRYPTION_KEY must be 16 bytes for AES-128');
-}
-if (IV.length !== 16) {
-    throw new Error('IV must be 16 bytes for AES-128');
-}
-
-const encrypt = (text) => {
-    const cipher = crypto.createCipheriv('aes-128-cbc', ENCRYPTION_KEY, IV);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
-};
-
-const decrypt = (encryptedText) => {
-    const decipher = crypto.createDecipheriv('aes-128-cbc', ENCRYPTION_KEY, IV);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-};
 
 exports.getPayment = async (req, res) => {
     try {
         const payment = await Payment.findOne({ userID: req.params.id });
         if (!payment) return res.status(404).send('Payment not found');
 
-        const decryptedPayment = {
+        res.send({
             userID: payment.userID,
-            CDNo: decrypt(payment.CDNo),
+            CDNo: payment.CDNo,
             expiryDate: payment.expiryDate,
-            CVV: decrypt(payment.CVV),
-            CardOwner: decrypt(payment.CardOwner)
-        };
-
-        res.send(decryptedPayment);
+            CVV: payment.CVV,
+            CardOwner: payment.CardOwner
+        });
     } catch (error) {
         console.error('Error fetching payment:', error);
         res.status(500).send('Server error');
@@ -54,28 +26,26 @@ exports.updatePayment = async (req, res) => {
             return res.status(400).send('All fields are required');
         }
 
-        const encryptedPayment = {
-            CDNo: encrypt(CDNo.toString()),
-            expiryDate, // Not encrypted for simplicity
-            CVV: encrypt(CVV.toString()),
-            CardOwner: encrypt(CardOwner)
+        const paymentData = {
+            CDNo,
+            expiryDate,
+            CVV,
+            CardOwner
         };
 
         const payment = await Payment.findOneAndUpdate(
             { userID: req.params.id },
-            encryptedPayment,
+            paymentData,
             { new: true, upsert: true }
         );
 
-        const decryptedPayment = {
+        res.send({
             userID: payment.userID,
-            CDNo: decrypt(payment.CDNo),
+            CDNo: payment.CDNo,
             expiryDate: payment.expiryDate,
-            CVV: decrypt(payment.CVV),
-            CardOwner: decrypt(payment.CardOwner)
-        };
-
-        res.send(decryptedPayment);
+            CVV: payment.CVV,
+            CardOwner: payment.CardOwner
+        });
     } catch (error) {
         console.error('Error updating payment:', error);
         res.status(500).send('Server error');
