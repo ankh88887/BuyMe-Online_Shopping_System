@@ -11,7 +11,6 @@ import {
     updateProduct,
     deleteProduct
 } from "../routes/adminRoutes.js";
-// import { generateToken } from "../utils/generateToken.js"; // Import token generator if needed
 
 const AdminRouter = express.Router();
 
@@ -48,7 +47,6 @@ AdminRouter.post("/users", async (req, res) => {
                 email: user.email,
                 isAdmin: user.isAdmin,
                 address: user.address,
-                // token: generateToken(user._id), // Uncomment if using tokens
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });

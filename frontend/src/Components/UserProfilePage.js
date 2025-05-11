@@ -228,20 +228,6 @@ const UserProfilePage = () => {
       }
     }
 
-    // else if (name === "cvv") {
-    //   // Only allow numbers and limit to 4 digits
-    //   newValue = value.replace(/\D/g, '').slice(0, 4); // This should be slice(0, 4)
-    //   if (newValue && newValue.length < 3) {
-    //     newErrors.cvv = "CVV must be 3 or 4 digits";
-    //   } else {
-    //     delete newErrors.cvv;
-    //   }
-    // }
-    
-
-
-
-    
     setPaymentInfo(prev => ({
       ...prev,
       [name]: newValue,
@@ -402,7 +388,6 @@ const UserProfilePage = () => {
                     />
                   </div>
                   
-                  {/* Reset Password Link - Added here */}
                   <div className="mb-4">
                     <Link to="/reset-password" className="user-profile-unique-btn-outline">
                       <FaLock className="me-2" /> Reset Password

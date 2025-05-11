@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
-const Product = require('../models/Product'); // Fixed the import name
+const Product = require('../models/Product');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
@@ -73,7 +73,7 @@ router.post('/users', async (req, res) => {
     await user.save();
     res.status(201).send(user);
   } catch (error) {
-    if (error.code === 11000) { // MongoDB duplicate key error
+    if (error.code === 11000) {
     if (error.keyPattern.userID) {
         return res.status(400).send({ message: 'User ID conflict. Try again.' });
     }
@@ -200,7 +200,7 @@ router.post('/products', async (req, res) => {
     await product.save();
     res.status(201).send(product);
   } catch (error) {
-    if (error.code === 11000) { // MongoDB duplicate key error
+    if (error.code === 11000) {
     return res.status(400).send({ message: 'Product ID conflict. Try again.' });
     }
     res.status(500).send({ message: 'Failed to create product', error: error.message });

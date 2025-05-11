@@ -114,18 +114,16 @@ router.post('/profile', async (req, res) => {
       if (payment) {
         // Update existing payment
         payment.CardOwner = cardName;
-        payment.CDNo = parseInt(cleanCardNumber);
+        payment.CDNo = cleanCardNumber;
         payment.expiryDate = `${expiryMonth}/${expiryYear}`;
-        // payment.CVV = parseInt(cvv);
         payment.CVV = cvv;
       } else {
         // Create new payment
         payment = new Payment({
           userID: user.userID,
           CardOwner: cardName,
-          CDNo: parseInt(cleanCardNumber),
+          CDNo: cleanCardNumber,
           expiryDate: `${expiryMonth}/${expiryYear}`,
-          // CVV: parseInt(cvv)
           CVV: cvv.toString()
         });
       }
