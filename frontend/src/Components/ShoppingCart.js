@@ -13,7 +13,6 @@ const ShoppingCart = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { currentUser } = useContext(CurrentLoginUser);
-    // Use CartContext instead of making API calls for cart updates
     const { cartItems, setCartItems } = useContext(CartContext);
     
     const userID = currentUser?.userID;
@@ -30,7 +29,6 @@ const ShoppingCart = () => {
             try {
                 const itemsWithDetails = [];
                 
-                // Fetch details for each product in the cart
                 for (const item of cartItems) {
                     try {
                         const productResponse = await axios.get(`${API_BASE_URL}/products/${item.id}`);
@@ -77,47 +75,47 @@ const ShoppingCart = () => {
                 const cart = cartResponse.data;
                 
                 if (cart && cart.items) {
-                    // Convert object format to array format expected by UpdateCartBtn
-                    const cartItemsArray = [];
-                    for (const [productID, quantity] of Object.entries(cart.items)) {
-                        cartItemsArray.push({
-                            id: productID,
-                            quantity: parseInt(quantity, 10)
-                        });
-                    }
+                    // Convert backend cart items to array format
+                    const backendCartItems = Object.entries(cart.items).map(([productID, quantity]) => ({
+                        id: productID,
+                        quantity: parseInt(quantity, 10)
+                    }));
                     
-                    // Always update cart items from the database, regardless of current state
-                    setCartItems(cartItemsArray);
-                } else {
-                    // If no active cart or empty items, ensure the cart is empty
-                    setCartItems([]);
+                    // Merge backend cart with current cartItems, prioritizing current cartItems
+                    setCartItems(prevItems => {
+                        const mergedItems = [...prevItems];
+                        backendCartItems.forEach(backendItem => {
+                            const existingItemIndex = mergedItems.findIndex(item => item.id === backendItem.id);
+                            if (existingItemIndex === -1) {
+                                // Add backend item if it doesn't exist in current cart
+                                mergedItems.push(backendItem);
+                            }
+                            // If item exists in current cart, keep the current cart's quantity
+                        });
+                        return mergedItems;
+                    });
                 }
+                // If no active cart or empty items, do not clear cartItems to preserve in-memory changes
             } catch (error) {
                 console.error('Error loading initial cart:', error);
-                // If there's an error, still clear the cart to prevent stale data
-                setCartItems([]);
+                // Do not clear cartItems on error to preserve in-memory changes
             } finally {
                 setLoading(false);
             }
         };
         
-        // Always load the cart when component mounts or when focusing the page
         loadInitialCart();
 
-        // Add an event listener to reload cart data when the page gets focus
-        // This ensures cart is refreshed when navigating back to it after payment
         const handleFocus = () => {
             loadInitialCart();
         };
         
         window.addEventListener('focus', handleFocus);
         
-        // Clean up event listener on component unmount
         return () => {
             window.removeEventListener('focus', handleFocus);
         };
-        
-    }, [userID, navigate, setCartItems]); // Removed cartItems.length dependency
+    }, [userID, navigate, setCartItems]);
 
     const handleQuantityChange = (id, delta) => {
         setCartItems(prevItems => {
@@ -128,10 +126,8 @@ const ShoppingCart = () => {
             const newQuantity = updatedItems[itemIndex].quantity + delta;
             
             if (newQuantity <= 0) {
-                // Remove item if quantity becomes zero or negative
                 updatedItems.splice(itemIndex, 1);
             } else {
-                // Update quantity
                 updatedItems[itemIndex] = {
                     ...updatedItems[itemIndex],
                     quantity: newQuantity
@@ -141,37 +137,6 @@ const ShoppingCart = () => {
             return updatedItems;
         });
     };
-
-    // Function to synchronize cart with backend after quantity changes
-    const syncCartWithBackend = async () => {
-        if (!userID) return;
-        
-        try {
-            // Convert cart items to the format expected by the API
-            const cartItemsObject = {};
-            cartItems.forEach(item => {
-                cartItemsObject[item.id] = item.quantity;
-            });
-            
-            // Update the active cart in the database
-            await axios.put(`${API_BASE_URL}/carts/${userID}`, {
-                items: cartItemsObject,
-                totalCost: parseFloat(calculateTotal()),
-                isActive: true
-            });
-            
-            console.log('Cart synchronized with backend');
-        } catch (error) {
-            console.error('Error synchronizing cart with backend:', error);
-        }
-    };
-
-    // Sync cart with backend whenever cart items change
-    useEffect(() => {
-        if (cartItems.length > 0) {
-            syncCartWithBackend();
-        }
-    }, [cartItems]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const calculateTotal = () => {
         return cartWithDetails.reduce((sum, item) => sum + item.quantity * item.cost, 0).toFixed(2);

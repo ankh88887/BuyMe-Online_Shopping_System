@@ -10,9 +10,10 @@ const {
 } = require('../controllers/reviewController');
 
 // POST /reviews - Create a new review
+
 router.post('/', createReview);
-router.get('/', getReviews)
 router.get('/check', checkReviewByUserID);
+router.get('/', getReviews)
 router.get('/:products_id', getReviewsByProductsId)
 
 module.exports = router

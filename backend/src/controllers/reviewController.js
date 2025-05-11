@@ -56,7 +56,7 @@ exports.getReviewsByProductsId = async (req, res) => {
 exports.checkReviewByUserID = async (req, res) => {
     try {
         const { userID, productID } = req.query;
-        const existingReview = await Review.findOne({ userID, ProductID: productID });//Find review by product ID and UserID
+        const existingReview = await Reviews.findOne({ userID, productID });//Find review by product ID and UserID
         res.json({ exists: !!existingReview });
     } catch (error) {
         console.error('Error checking review:', error);
@@ -66,8 +66,8 @@ exports.checkReviewByUserID = async (req, res) => {
 
 exports.createReview = async (req, res) => {
     try {
-        const { reviewID, ProductID, userID, comment, rate } = req.body;
-        const review = new Review({ reviewID, ProductID, userID, comment, rate });
+        const { reviewID, productID, userID, comment, rate } = req.body;
+        const review = new Reviews({ reviewID, productID, userID, comment, rate });
         await review.save();
         res.status(201).send(review);
     } catch (error) {

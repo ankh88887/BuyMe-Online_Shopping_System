@@ -37,7 +37,7 @@ const PaymentPage = () => {
     const items = location.state?.items || new Map();
     
     const { currentUser } = useContext(CurrentLoginUser);
-    const { setCartItems } = useContext(CartContext);
+    const { cartItems, setCartItems } = useContext(CartContext);
     const userID = currentUser?.userID;
 
     useEffect(() => {
@@ -111,7 +111,6 @@ const PaymentPage = () => {
     const handleCardInputChange = (e) => {
         const { name, value } = e.target;
         
-        // Clear the error for this field as user is typing
         setErrors(prev => ({ ...prev, [name]: '' }));
         
         if (name === 'CDNo') {
@@ -120,7 +119,6 @@ const PaymentPage = () => {
         } else if (name === 'expiryDate') {
             setTempCardInfo(prev => ({ ...prev, [name]: formatExpiryDate(value) }));
         } else if (name === 'CVV') {
-            // Only allow numbers for CVV
             const cvvValue = value.replace(/[^\d]/g, '').substring(0, 4);
             setTempCardInfo(prev => ({ ...prev, [name]: cvvValue }));
         } else {
@@ -137,20 +135,17 @@ const PaymentPage = () => {
         };
         let hasErrors = false;
         
-        // Validate card owner name
         if (!tempCardInfo.CardOwner.trim()) {
             newErrors.CardOwner = 'Card holder name is required';
             hasErrors = true;
         }
         
-        // Validate card number
         const cardNumberDigits = tempCardInfo.CDNo.replace(/\s/g, '');
         if (!cardNumberDigits || cardNumberDigits.length < 15 || cardNumberDigits.length > 16) {
             newErrors.CDNo = 'Please enter a valid card number';
             hasErrors = true;
         }
         
-        // Validate expiry date
         if (!tempCardInfo.expiryDate) {
             newErrors.expiryDate = 'Expiry date is required';
             hasErrors = true;
@@ -171,7 +166,6 @@ const PaymentPage = () => {
             }
         }
         
-        // Validate CVV
         if (!tempCardInfo.CVV || !/^\d{3,4}$/.test(tempCardInfo.CVV)) {
             newErrors.CVV = 'Please enter a valid security code';
             hasErrors = true;
@@ -242,20 +236,16 @@ const PaymentPage = () => {
         return isPersonalValid && isCardValid;
     };
 
-    // Function to update product stock after purchase
     const updateProductStock = async (productID, quantity) => {
         try {
-            // First get the current product information
             const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
             const product = productResponse.data;
             
-            // Calculate new stock level
             const currentStock = product.stock || 0;
             const newStock = Math.max(0, currentStock - quantity);
             
             console.log(`Updating product ${productID} stock: ${currentStock} -> ${newStock}`);
             
-            // Update the product stock
             await axios.put(`${API_BASE_URL}/products/${productID}`, {
                 stock: newStock
             });
@@ -267,7 +257,6 @@ const PaymentPage = () => {
         }
     };
 
-    // Check if there's enough stock for all items
     const validateStock = async () => {
         let allInStock = true;
         let outOfStockItems = [];
@@ -331,10 +320,16 @@ const PaymentPage = () => {
                 console.warn('Some stock updates failed, but continuing with payment');
             }
 
-            // Update the existing active cart
+            // Convert cartItems from CartContext to the format expected by the API
+            const cartItemsObject = {};
+            cartItems.forEach(item => {
+                cartItemsObject[item.id] = item.quantity;
+            });
+
+            // Update the existing active cart with the current cartItems
             const currentDate = new Date().toISOString();
             await axios.put(`${API_BASE_URL}/carts/${userID}`, {
-                items: Object.fromEntries(items),
+                items: cartItemsObject,
                 totalCost: parseFloat(totalCost),
                 purchaseDate: currentDate,
                 isActive: false,
@@ -363,7 +358,6 @@ const PaymentPage = () => {
         }
     };
 
-    // Helper function to create an error message element if there's an error
     const renderError = (errorMessage) => {
         if (!errorMessage) return null;
         return (
@@ -407,186 +401,186 @@ const PaymentPage = () => {
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                                <label htmlFor="email">Email *</label>
-                                <input
-                                    id="email"
-                                    type="text"
-                                    value={personalInfo.email}
-                                    className={styles.formInput}
-                                    readOnly
-                                />
-                            </div>
-                        </div>
-                        <button
-                            className={styles.btnProfile}
-                            onClick={() => navigate('/profile')}
-                        >
-                            Edit Profile
-                        </button>
-                    </div>
-                    <div className={styles.infoGroup}>
-                        <h3>Card Info</h3>
-                        <div className={styles.formRow}>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="cardOwner">Card holder's name *</label>
-                                {editCardMode ? (
-                                    <>
-                                        <input
-                                            id="cardOwner"
-                                            type="text"
-                                            name="CardOwner"
-                                            value={tempCardInfo.CardOwner}
-                                            onChange={handleCardInputChange}
-                                            className={styles.formInput}
-                                            placeholder="Enter name"
-                                            style={errors.CardOwner ? {borderColor: 'red'} : {}}
-                                        />
-                                        {renderError(errors.CardOwner)}
-                                    </>
-                                ) : (
+                                    <label htmlFor="email">Email *</label>
                                     <input
-                                        id="cardOwner"
+                                        id="email"
                                         type="text"
-                                        value={cardInfo.CardOwner}
+                                        value={personalInfo.email}
                                         className={styles.formInput}
                                         readOnly
                                     />
-                                )}
+                                </div>
                             </div>
+                            <button
+                                className={styles.btnProfile}
+                                onClick={() => navigate('/profile')}
+                            >
+                                Edit Profile
+                            </button>
                         </div>
-                        <div className={styles.formRow}>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="cardID">Card Number *</label>
-                                {editCardMode ? (
-                                    <>
-                                        <input
-                                            id="cardID"
-                                            type="text"
-                                            name="CDNo"
-                                            value={tempCardInfo.CDNo}
-                                            onChange={handleCardInputChange}
-                                            className={styles.formInput}
-                                            placeholder="XXXX XXXX XXXX XXXX"
-                                            style={errors.CDNo ? {borderColor: 'red'} : {}}
-                                        />
-                                        {renderError(errors.CDNo)}
-                                    </>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={cardInfo.CDNo}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
-                            </div>
-                        </div>
-                        <div className={styles.formRow}>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="expiryDate">Expiry date (MM/YY) *</label>
-                                <div className={styles.expiryGroup}>
+                        <div className={styles.infoGroup}>
+                            <h3>Card Info</h3>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="cardOwner">Card holder's name *</label>
                                     {editCardMode ? (
                                         <>
                                             <input
-                                                id="expiryDate"
+                                                id="cardOwner"
                                                 type="text"
-                                                name="expiryDate"
-                                                value={tempCardInfo.expiryDate}
+                                                name="CardOwner"
+                                                value={tempCardInfo.CardOwner}
                                                 onChange={handleCardInputChange}
                                                 className={styles.formInput}
-                                                placeholder="MM/YY"
-                                                maxLength="5"
-                                                style={errors.expiryDate ? {borderColor: 'red'} : {}}
+                                                placeholder="Enter name"
+                                                style={errors.CardOwner ? {borderColor: 'red'} : {}}
                                             />
-                                            {renderError(errors.expiryDate)}
+                                            {renderError(errors.CardOwner)}
                                         </>
                                     ) : (
                                         <input
+                                            id="cardOwner"
                                             type="text"
-                                            value={cardInfo.expiryDate}
+                                            value={cardInfo.CardOwner}
                                             className={styles.formInput}
                                             readOnly
                                         />
                                     )}
                                 </div>
                             </div>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="cvv">Security Code (CVV) *</label>
-                                {editCardMode ? (
-                                    <>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="cardID">Card Number *</label>
+                                    {editCardMode ? (
+                                        <>
+                                            <input
+                                                id="cardID"
+                                                type="text"
+                                                name="CDNo"
+                                                value={tempCardInfo.CDNo}
+                                                onChange={handleCardInputChange}
+                                                className={styles.formInput}
+                                                placeholder="XXXX XXXX XXXX XXXX"
+                                                style={errors.CDNo ? {borderColor: 'red'} : {}}
+                                            />
+                                            {renderError(errors.CDNo)}
+                                        </>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={cardInfo.CDNo}
+                                            className={styles.formInput}
+                                            readOnly
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="expiryDate">Expiry date (MM/YY) *</label>
+                                    <div className={styles.expiryGroup}>
+                                        {editCardMode ? (
+                                            <>
+                                                <input
+                                                    id="expiryDate"
+                                                    type="text"
+                                                    name="expiryDate"
+                                                    value={tempCardInfo.expiryDate}
+                                                    onChange={handleCardInputChange}
+                                                    className={styles.formInput}
+                                                    placeholder="MM/YY"
+                                                    maxLength="5"
+                                                    style={errors.expiryDate ? {borderColor: 'red'} : {}}
+                                                />
+                                                {renderError(errors.expiryDate)}
+                                            </>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={cardInfo.expiryDate}
+                                                className={styles.formInput}
+                                                readOnly
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="cvv">Security Code (CVV) *</label>
+                                    {editCardMode ? (
+                                        <>
+                                            <input
+                                                id="cvv"
+                                                type="text"
+                                                name="CVV"
+                                                value={tempCardInfo.CVV}
+                                                onChange={handleCardInputChange}
+                                                className={styles.formInput}
+                                                placeholder="XXX"
+                                                maxLength="4"
+                                                style={errors.CVV ? {borderColor: 'red'} : {}}
+                                            />
+                                            {renderError(errors.CVV)}
+                                        </>
+                                    ) : (
                                         <input
                                             id="cvv"
                                             type="text"
-                                            name="CVV"
-                                            value={tempCardInfo.CVV}
-                                            onChange={handleCardInputChange}
+                                            value={cardInfo.CVV}
                                             className={styles.formInput}
-                                            placeholder="XXX"
-                                            maxLength="4"
-                                            style={errors.CVV ? {borderColor: 'red'} : {}}
+                                            readOnly
                                         />
-                                        {renderError(errors.CVV)}
-                                    </>
-                                ) : (
-                                    <input
-                                        id="cvv"
-                                        type="text"
-                                        value={cardInfo.CVV}
-                                        className={styles.formInput}
-                                        readOnly
-                                    />
-                                )}
+                                    )}
+                                </div>
                             </div>
+                            {editCardMode ? (
+                                <div className={styles.actionButtons}>
+                                    <button 
+                                        className={styles.btnCancel} 
+                                        onClick={handleCancelCardEdit}
+                                        disabled={isProcessing}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className={styles.btnSave} 
+                                        onClick={handleSaveCardChanges}
+                                        disabled={isProcessing}
+                                    >
+                                        {isProcessing ? 'Saving...' : 'Save'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    className={styles.btnEdit}
+                                    onClick={handleEditCard}
+                                    disabled={!cardInfo.isEditable}
+                                >
+                                    Edit
+                                </button>
+                            )}
                         </div>
-                        {editCardMode ? (
-                            <div className={styles.actionButtons}>
-                                <button 
-                                    className={styles.btnCancel} 
-                                    onClick={handleCancelCardEdit}
-                                    disabled={isProcessing}
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    className={styles.btnSave} 
-                                    onClick={handleSaveCardChanges}
-                                    disabled={isProcessing}
-                                >
-                                    {isProcessing ? 'Saving...' : 'Save'}
-                                </button>
+                        <div className={styles.paymentFooter}>
+                            <div className={styles.totalRow}>
+                                <span>Total cost:</span>
+                                <input
+                                    type="text"
+                                    value={`$${totalCost}`}
+                                    className={styles.formInput}
+                                    readOnly
+                                />
                             </div>
-                        ) : (
                             <button
-                                className={styles.btnEdit}
-                                onClick={handleEditCard}
-                                disabled={!cardInfo.isEditable}
+                                className={styles.btnConfirm}
+                                onClick={handleConfirmPayment}
+                                disabled={!isFormValid() || isProcessing}
                             >
-                                Edit
+                                {isProcessing ? 'Processing...' : 'Confirm Payment'}
                             </button>
-                        )}
-                    </div>
-                    <div className={styles.paymentFooter}>
-                        <div className={styles.totalRow}>
-                            <span>Total cost:</span>
-                            <input
-                                type="text"
-                                value={`$${totalCost}`}
-                                className={styles.formInput}
-                                readOnly
-                            />
                         </div>
-                        <button
-                            className={styles.btnConfirm}
-                            onClick={handleConfirmPayment}
-                            disabled={!isFormValid() || isProcessing}
-                        >
-                            {isProcessing ? 'Processing...' : 'Confirm Payment'}
-                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
 };
 
 export default PaymentPage;
