@@ -28,19 +28,6 @@ function App() {
     }
   }, []);
 
-    // In your App.js or main component
-  useEffect(() => {
-    // Set the current user to userID = 1 for testing
-    const mockUser = {
-      userID: "1"
-    };
-    
-    // Store in localStorage for persistence across page refreshes
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    localStorage.setItem("token", "mock-jwt-token-for-testing");
-  }, []);
-
-
   return (
     <div>
       <BrowserRouter>

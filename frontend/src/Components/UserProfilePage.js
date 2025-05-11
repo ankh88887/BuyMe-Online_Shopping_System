@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect, useRef, useCallback } from "rea
 import { CurrentLoginUser } from "./CurrentLoginUser";
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEdit, FaSave, FaTimes, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
-import userIcon from '../Images/user_icon.png'; // Make sure this path is correct
-import "./UserProfilePage.css"; // Import your CSS file for styling
+import userIcon from '../Images/user_icon.png';
+import "./UserProfilePage.css";
 
 const UserProfilePage = () => {
   const { currentUser } = useContext(CurrentLoginUser);
@@ -26,7 +26,6 @@ const UserProfilePage = () => {
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      // Use the API endpoint from your routes with fetch
       const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile/${currentUser.userID}`);
       const data = await response.json();
       
@@ -52,16 +51,13 @@ const UserProfilePage = () => {
     }
   }, [currentUser]);
 
-  // Use a ref to access formErrors without causing re-renders
   const formErrorsRef = useRef(formErrors);
   
-  // Update the ref whenever formErrors changes
   useEffect(() => {
     formErrorsRef.current = formErrors;
   }, [formErrors]);
 
   const validateForm = useCallback(() => {
-    // Create a new errors object
     const newErrors = {};
     const { cardName, cardNumber, expiryMonth, expiryYear, cvv } = paymentInfo;
     
@@ -120,7 +116,6 @@ const UserProfilePage = () => {
     
     setFormErrors(newErrors);
     
-    // Form is valid if there are no errors
     return Object.keys(newErrors).length === 0;
   }, [paymentInfo]); // No formErrors dependency
 
@@ -133,7 +128,6 @@ const UserProfilePage = () => {
       navigate('/login');
     }
     
-    // Clean up timeout on unmount
     return () => {
       if (successTimeoutRef.current) {
         clearTimeout(successTimeoutRef.current);
@@ -141,7 +135,6 @@ const UserProfilePage = () => {
     };
   }, [currentUser, navigate, fetchUserProfile]);
 
-  // Effect to handle auto-disappearing success message
   useEffect(() => {
     if (success) {
       successTimeoutRef.current = setTimeout(() => {
@@ -156,7 +149,6 @@ const UserProfilePage = () => {
     };
   }, [success]);
 
-  // Effect to validate form whenever payment info changes
   useEffect(() => {
     validateForm();
   }, [paymentInfo, validateForm]);
@@ -174,7 +166,6 @@ const UserProfilePage = () => {
       });
       setFormErrors({});
     }
-    // Clear any previous messages
     setError("");
     setSuccess("");
   };
@@ -275,7 +266,6 @@ const UserProfilePage = () => {
       const data = await response.json();
       
       if (data.success) {
-        // Refresh user data after successful update
         fetchUserProfile();
         setIsEditing(false);
         setSuccess("Profile updated successfully!");

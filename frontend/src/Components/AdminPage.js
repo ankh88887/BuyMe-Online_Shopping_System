@@ -219,7 +219,6 @@ const AdminPage = () => {
                 return;
             }
     
-            // Success case
             if (data._id) {
                 handleReset();
                 const userType = formData.isAdmin ? "Admin" : "User";
@@ -617,10 +616,6 @@ const AdminPage = () => {
                                     <label>Username:</label>
                                     <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                {/* <div className="form-row-1">
-                                    <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
-                                </div> */}
                                 <div className="form-row-1">
                                     <label>Password:</label>
                                     <div className="password-input-container">
@@ -656,10 +651,6 @@ const AdminPage = () => {
                                     <label>Username:</label>
                                     <input type="text" name="userName" value={formData.userName || ""} onChange={handleInputChange} />
                                 </div>
-                                {/* <div className="form-row-1">
-                                    <label>Password:</label>
-                                    <input type="password" name="password" value={formData.password || ""} onChange={handleInputChange} placeholder="Please input the password" />
-                                </div> */}
                                 <div className="form-row-1">
                                     <label>Password:</label>
                                     <div className="password-input-container">
