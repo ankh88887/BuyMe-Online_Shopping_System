@@ -27,8 +27,8 @@ export default function ProductContainer({ productJSON }) {
                             <td>Stock:</td>
                             <td>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                                    <span>{product.stock}</span>
-                                    <AddToCart productID={product.productID} />
+                                    <span>{product.stock === 0? "out of stock" : product.stock}</span>
+                                    <AddToCart productID={product.productID} stock={product.stock} />
                                 </div>
                             </td>
                         </tr>
