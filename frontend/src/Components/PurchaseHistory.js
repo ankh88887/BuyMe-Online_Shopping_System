@@ -117,7 +117,7 @@ const PurchaseHistory = () => {
             const reviewID = `review_${Date.now()}-${productID}`;
             await axios.post(`${API_BASE_URL}/reviews`, {
                 reviewID,
-                ProductID: productID,
+                productID,
                 userID,
                 comment,
                 rate
