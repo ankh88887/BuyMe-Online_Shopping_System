@@ -1,0 +1,50 @@
+[{
+  "_id": {
+    "$oid": "6816257c560f8f943a14f332"
+  },
+  "reviewID": "1",
+  "productID": "1",
+  "userID": "2",
+  "comment": "The apple is fresh and tasty!",
+  "rate": 4
+},
+{
+  "_id": {
+    "$oid": "681625ba560f8f943a14f333"
+  },
+  "reviewID": "2",
+  "productID": "2",
+  "userID": "3",
+  "comment": "The orange is sweet and juicy.",
+  "rate": 4
+},
+{
+  "_id": {
+    "$oid": "681625d1560f8f943a14f334"
+  },
+  "reviewID": "3",
+  "productID": "3",
+  "userID": "2",
+  "comment": "The mango is ripe and perfect for desserts.",
+  "rate": 5
+},
+{
+  "_id": {
+    "$oid": "681625da560f8f943a14f335"
+  },
+  "reviewID": "4",
+  "productID": "5",
+  "userID": "3",
+  "comment": "Blueberries are fresh and great for snacking.",
+  "rate": 4
+},
+{
+  "_id": {
+    "$oid": "681625e4560f8f943a14f336"
+  },
+  "reviewID": "5",
+  "productID": "1",
+  "userID": "2",
+  "comment": "Bought apples again, still amazing quality!",
+  "rate": 5
+}]
