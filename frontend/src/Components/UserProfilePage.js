@@ -72,14 +72,14 @@ const UserProfilePage = () => {
       } else if (!/^[a-zA-Z\s]+$/.test(cardName)) {
         newErrors.cardName = "Card holder name can only contain letters";
       }
-      
+
       // Validate card number
       if (!cardNumber) {
         newErrors.cardNumber = "Card number is required";
-      } else if (cardNumber.length < 16) {
+      } else if (cardNumber.replace(/\s/g, '').length < 16) {
         newErrors.cardNumber = "Card number must be 16 digits";
       }
-      
+
       // Validate expiry month
       if (!expiryMonth) {
         newErrors.expiryMonth = "Expiry month is required";
@@ -194,14 +194,19 @@ const UserProfilePage = () => {
       }
     } 
     else if (name === "cardNumber") {
-      // Only allow numbers and limit to 16 digits
-      newValue = value.replace(/\D/g, '').slice(0, 16);
-      if (newValue && newValue.length < 16) {
+      // Remove all non-digits and spaces first
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 16);
+      
+      // Format with spaces after every 4 digits
+      newValue = digitsOnly.replace(/(\d{4})(?=\d)/g, '$1 ');
+      
+      // Validate card number length (excluding spaces)
+      if (digitsOnly && digitsOnly.length < 16) {
         newErrors.cardNumber = "Card number must be 16 digits";
       } else {
         delete newErrors.cardNumber;
       }
-    } 
+    }
     else if (name === "expiryMonth") {
       // Only allow numbers and limit to 2 digits
       newValue = value.replace(/\D/g, '').slice(0, 2);
@@ -251,9 +256,10 @@ const UserProfilePage = () => {
         username: editedProfile.username,
         email: editedProfile.email,
         address: editedProfile.address,
-        ...paymentInfo
+        ...paymentInfo,
+        cardNumber: paymentInfo.cardNumber.replace(/\s/g, '') // Remove spaces before submission
       };
-
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/userinfo/profile`, {
         method: 'POST',
         headers: {
@@ -425,7 +431,7 @@ const UserProfilePage = () => {
                       value={paymentInfo.cardNumber}
                       onChange={handlePaymentChange}
                       placeholder="8888 8888 8888 8888"
-                      maxLength={16}
+                      maxLength={19}
                     />
                     {formErrors.cardNumber && (
                       <div className="user-profile-unique-invalid-feedback">{formErrors.cardNumber}</div>
