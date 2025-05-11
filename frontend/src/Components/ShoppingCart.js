@@ -75,7 +75,6 @@ const ShoppingCart = () => {
                 const cart = cartResponse.data;
                 
                 if (cart && cart.items) {
-                    // Convert backend cart items to array format
                     const backendCartItems = Object.entries(cart.items).map(([productID, quantity]) => ({
                         id: productID,
                         quantity: parseInt(quantity, 10)
@@ -87,18 +86,17 @@ const ShoppingCart = () => {
                         backendCartItems.forEach(backendItem => {
                             const existingItemIndex = mergedItems.findIndex(item => item.id === backendItem.id);
                             if (existingItemIndex === -1) {
-                                // Add backend item if it doesn't exist in current cart
                                 mergedItems.push(backendItem);
                             }
-                            // If item exists in current cart, keep the current cart's quantity
+                            // Keep existing quantity if item is already in cartItems
                         });
                         return mergedItems;
                     });
                 }
-                // If no active cart or empty items, do not clear cartItems to preserve in-memory changes
+                // Do not clear cartItems if no backend cart exists
             } catch (error) {
                 console.error('Error loading initial cart:', error);
-                // Do not clear cartItems on error to preserve in-memory changes
+                // Preserve in-memory cartItems on error
             } finally {
                 setLoading(false);
             }
