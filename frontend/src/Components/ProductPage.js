@@ -58,8 +58,13 @@ export default function ProductData() {
                 })
             );
 
-            setReviews(reviewsWithUsername);
-            console.log("All new Reviews:", reviewsWithUsername);
+            const sortedreviews = reviewsWithUsername.sort((a, b) => {
+                const RatingA = a.rate
+                const RatingB = b.rate
+                return RatingB - RatingA
+            });
+            setReviews(sortedreviews);
+            console.log("All new Reviews:", sortedreviews);
         } catch (error) {
             console.error("Error fetching review:", error)
             setReviews([])
