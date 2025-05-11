@@ -16,5 +16,6 @@ router.put('/forget-password/', ForgetPassword);
 router.get('/search/:userName', getUserByUsername);
 router.get('/', getUsers);
 router.get('/:id', getUserById);
+router.get('/:id', getUserById)
 
 module.exports = router;

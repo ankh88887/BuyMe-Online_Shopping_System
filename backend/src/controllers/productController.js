@@ -1,5 +1,61 @@
 const Product = require('../models/Product');
 
+
+exports.updateProduct = async (req, res) => {
+    try {
+        const updateData = {};
+        
+        // Extract fields from request body that are allowed to be updated
+        const { rateCount, totalRate, stock } = req.body;
+        
+        // Only add fields that are provided in the request
+        if (rateCount !== undefined) updateData.rateCount = rateCount;
+        if (totalRate !== undefined) updateData.totalRate = totalRate;
+        if (stock !== undefined) updateData.stock = stock;
+        
+        const product = await Product.findOneAndUpdate(
+            { productID: req.params.id },  // FIXED: Changed from req.params.productId to req.params.id
+            updateData,
+            { new: true }
+        );
+        
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        
+        res.json(product);
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.createProduct = async (req, res) => {
+    try {
+        const { productID, productName } = req.body;
+        if (!productID || !productName) {
+            return res.status(400).json({ error: 'productID and productName are required' });
+        }
+
+        const existingProduct = await Product.findOne({ productID });
+        if (existingProduct) {
+            return res.status(400).json({ error: 'Product with this ID already exists' });
+        }
+
+        const product = new Product({
+            productID,
+            productName,
+            rateCount: 0,
+            totalRate: 0
+        });
+        await product.save();
+        res.status(201).json(product);
+    } catch (error) {
+        console.error('Error creating product:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 function ProductConstructor(product) {
   return {
     productID: product.productID,

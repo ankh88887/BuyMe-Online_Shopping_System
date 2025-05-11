@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
-import React, { useContext, useState } from "react";
-import { CurrentLoginUser } from "./CurrentLoginUser";
+import React, { useContext, useState } from 'react';
+import { CurrentLoginUser } from '../Components/CurrentLoginUser';
 
-export default function Login() {
+export default function LoginPage() {
   const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -21,11 +21,11 @@ export default function Login() {
 
       if (response.ok) {
         const user = await response.json();
-
         setCurrentUser(user);
-        console.log('Current User:', user); 
+        localStorage.setItem('currentUser', JSON.stringify(user)); // Save to localStorage
+        console.log('Current User:', user);
         console.log('Current User in user variable:', currentUser); 
-        console.log('User ID:', user.userID); 
+        console.log('User ID:', user.userID);
         navigate('/');
       } else {
         const errorData = await response.json();
@@ -60,12 +60,12 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button className="button" type="submit">
-                Login
-              </button>
+              <button className="button" type="submit">Login</button>
             </form>
             {currentUser && (
-              <p>Logged in as: {currentUser.userName || currentUser.email} (User ID: {currentUser.userID})</p>
+              <p>
+                Logged in as: {currentUser.userName || currentUser.email} (User ID: {currentUser.userID})
+              </p>
             )}
             <p className="account">
               Forget Password? <Link to="/forgetpw">Click here</Link>
@@ -82,4 +82,3 @@ export default function Login() {
     </div>
   );
 }
-
