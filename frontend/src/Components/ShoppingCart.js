@@ -11,40 +11,53 @@ const API_BASE_URL = 'http://localhost:5005/api';
 const ShoppingCart = () => {
     const [cartWithDetails, setCartWithDetails] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [productCache, setProductCache] = useState({}); // Cache for product details
     const navigate = useNavigate();
     const { currentUser } = useContext(CurrentLoginUser);
     const { cartItems, setCartItems } = useContext(CartContext);
     
     const userID = currentUser?.userID;
 
-    // Fetch product details for cart items when cartItems changes
+    // Fetch product details only for new or uncached products
     useEffect(() => {
         const fetchProductDetails = async () => {
             if (!userID) {
                 navigate('/login');
                 return;
             }
-            
+
             setLoading(true);
             try {
+                const newCache = { ...productCache };
                 const itemsWithDetails = [];
-                
+
                 for (const item of cartItems) {
-                    try {
-                        const productResponse = await axios.get(`${API_BASE_URL}/products/${item.id}`);
-                        const product = productResponse.data;
-                        
-                        itemsWithDetails.push({
-                            id: item.id,
-                            name: product.productName,
-                            quantity: item.quantity,
-                            cost: product.price,
-                        });
-                    } catch (error) {
-                        console.error(`Error fetching product ${item.id}:`, error);
+                    if (!newCache[item.id]) {
+                        try {
+                            const productResponse = await axios.get(`${API_BASE_URL}/products/${item.id}`);
+                            const product = productResponse.data;
+                            newCache[item.id] = {
+                                name: product.productName,
+                                cost: product.price,
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching product ${item.id}:`, error);
+                            newCache[item.id] = {
+                                name: `Product ${item.id} (Not Found)`,
+                                cost: 0,
+                            };
+                        }
                     }
+
+                    itemsWithDetails.push({
+                        id: item.id,
+                        name: newCache[item.id].name,
+                        quantity: item.quantity,
+                        cost: newCache[item.id].cost,
+                    });
                 }
-                
+
+                setProductCache(newCache);
                 setCartWithDetails(itemsWithDetails);
             } catch (error) {
                 console.error('Error preparing cart:', error);
@@ -59,28 +72,28 @@ const ShoppingCart = () => {
             setCartWithDetails([]);
             setLoading(false);
         }
-    }, [cartItems, userID, navigate]);
+    }, [cartItems, userID, navigate]); // Keep dependency on cartItems for initial load or new items
 
-    // Load initial cart data when component mounts or when navigated to
+    // Load initial cart data from backend
     useEffect(() => {
         const loadInitialCart = async () => {
             if (!userID) {
                 navigate('/login');
                 return;
             }
-            
+
             setLoading(true);
             try {
                 const cartResponse = await axios.get(`${API_BASE_URL}/carts/active/${userID}`);
                 const cart = cartResponse.data;
-                
+
                 if (cart && cart.items) {
                     const backendCartItems = Object.entries(cart.items).map(([productID, quantity]) => ({
                         id: productID,
-                        quantity: parseInt(quantity, 10)
+                        quantity: parseInt(quantity, 10),
                     }));
-                    
-                    // Merge backend cart with current cartItems, prioritizing current cartItems
+
+                    // Merge backend cart with current cartItems
                     setCartItems(prevItems => {
                         const mergedItems = [...prevItems];
                         backendCartItems.forEach(backendItem => {
@@ -88,28 +101,25 @@ const ShoppingCart = () => {
                             if (existingItemIndex === -1) {
                                 mergedItems.push(backendItem);
                             }
-                            // Keep existing quantity if item is already in cartItems
                         });
                         return mergedItems;
                     });
                 }
-                // Do not clear cartItems if no backend cart exists
             } catch (error) {
                 console.error('Error loading initial cart:', error);
-                // Preserve in-memory cartItems on error
             } finally {
                 setLoading(false);
             }
         };
-        
+
         loadInitialCart();
 
         const handleFocus = () => {
             loadInitialCart();
         };
-        
+
         window.addEventListener('focus', handleFocus);
-        
+
         return () => {
             window.removeEventListener('focus', handleFocus);
         };
@@ -119,25 +129,39 @@ const ShoppingCart = () => {
         setCartItems(prevItems => {
             const itemIndex = prevItems.findIndex(item => item.id === id);
             if (itemIndex === -1) return prevItems;
-            
+
             const updatedItems = [...prevItems];
             const newQuantity = updatedItems[itemIndex].quantity + delta;
-            
+
             if (newQuantity <= 0) {
                 updatedItems.splice(itemIndex, 1);
             } else {
                 updatedItems[itemIndex] = {
                     ...updatedItems[itemIndex],
-                    quantity: newQuantity
+                    quantity: newQuantity,
                 };
             }
-            
+
+            // Update cartWithDetails directly to avoid re-fetch
+            setCartWithDetails(prevDetails => {
+                const updatedDetails = prevDetails.map(detail =>
+                    detail.id === id
+                        ? { ...detail, quantity: newQuantity }
+                        : detail
+                );
+                return newQuantity <= 0
+                    ? updatedDetails.filter(detail => detail.id !== id)
+                    : updatedDetails;
+            });
+
             return updatedItems;
         });
     };
 
     const calculateTotal = () => {
-        return cartWithDetails.reduce((sum, item) => sum + item.quantity * item.cost, 0).toFixed(2);
+        return cartWithDetails
+            .reduce((sum, item) => sum + item.quantity * item.cost, 0)
+            .toFixed(2);
     };
 
     const calculateTotalQuantity = () => {
@@ -219,7 +243,11 @@ const ShoppingCart = () => {
                                 readOnly
                             />
                         </div>
-                        <button className={styles.payButton} onClick={handleMakePayment} disabled={cartWithDetails.length === 0}>
+                        <button
+                            className={styles.payButton}
+                            onClick={handleMakePayment}
+                            disabled={cartWithDetails.length === 0}
+                        >
                             Make Payment
                         </button>
                     </div>
