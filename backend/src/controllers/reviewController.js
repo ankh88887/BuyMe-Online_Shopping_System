@@ -56,8 +56,15 @@ exports.getReviewsByProductsId = async (req, res) => {
 exports.checkReviewByUserID = async (req, res) => {
     try {
         const { userID, productID } = req.query;
-        const existingReview = await Reviews.findOne({ userID, productID });//Find review by product ID and UserID
-        res.json({ exists: !!existingReview });
+        const existingReview = await Reviews.findOne({ userID, productID });
+        if (existingReview) {
+            res.json({
+                exists: true,
+                review: reviewConstructor(existingReview)
+            });
+        } else {
+            res.json({ exists: false });
+        }
     } catch (error) {
         console.error('Error checking review:', error);
         res.status(500).json({ error: 'Server error' });
