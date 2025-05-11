@@ -14,10 +14,11 @@ const PurchaseHistory = () => {
     const [ratings, setRatings] = useState({});
     const [comments, setComments] = useState({});
     const [reviewExists, setReviewExists] = useState({});
-    
+    const [existingReviews, setExistingReviews] = useState({}); // Store review details
+
     const navigate = useNavigate();
     const { currentUser } = useContext(CurrentLoginUser);
-    
+
     const userID = currentUser?.userID;
 
     useEffect(() => {
@@ -31,11 +32,10 @@ const PurchaseHistory = () => {
             setError(null);
             try {
                 const response = await axios.get(`${API_BASE_URL}/carts/${userID}`);
-                // Sort carts by purchaseDate (newest to oldest)
                 const carts = response.data
                     .filter(cart => cart.purchaseDate && !cart.isActive)
                     .sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
-                    
+
                 const fetchItemDetails = async (productID, quantity) => {
                     const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
                     const reviewResponse = await axios.get(`${API_BASE_URL}/reviews/check?userID=${userID}&productID=${productID}`);
@@ -43,17 +43,14 @@ const PurchaseHistory = () => {
                         productID,
                         productName: productResponse.data.productName || `Product ${productID} (Not Found)`,
                         quantity,
-                        reviewExists: reviewResponse.data.exists
+                        reviewExists: reviewResponse.data.exists,
+                        review: reviewResponse.data.review // Include review details if it exists
                     };
                 };
 
                 const fetchCartItems = async (cart) => {
                     const itemEntries = Object.entries(cart.items);
-                    return await Promise.all(itemEntries.map(fetchItemDetailsForCart));
-                };
-
-                const fetchItemDetailsForCart = async ([productID, quantity]) => {
-                    return await fetchItemDetails(productID, quantity);
+                    return await Promise.all(itemEntries.map(([productID, quantity]) => fetchItemDetails(productID, quantity)));
                 };
 
                 const fetchCartDetails = async (cart) => {
@@ -61,26 +58,33 @@ const PurchaseHistory = () => {
                     return { ...cart, items };
                 };
 
-                const fetchDetailedPurchases = async (carts) => {
-                    return await Promise.all(carts.map(fetchCartDetails));
-                };
+                const detailedPurchases = await Promise.all(carts.map(fetchCartDetails));
 
-                const mapReviewExists = (detailedPurchases) => {
-                    return detailedPurchases.reduce(mapPurchaseToReviewExists, {});
-                };
+                // Map review existence and existing reviews
+                const reviewExistsMap = {};
+                const existingReviewsMap = {};
+                detailedPurchases.forEach(purchase => {
+                    purchase.items.forEach(item => {
+                        const key = `${purchase.CartID}-${item.productID}`;
+                        reviewExistsMap[key] = item.reviewExists;
+                        if (item.reviewExists && item.review) {
+                            existingReviewsMap[key] = item.review; // Store review details
+                            // Pre-populate ratings and comments for existing reviews
+                            if (item.review.rate) {
+                                ratings[key] = item.review.rate.toString();
+                            }
+                            if (item.review.comment) {
+                                comments[key] = item.review.comment;
+                            }
+                        }
+                    });
+                });
 
-                const mapPurchaseToReviewExists = (acc, purchase) => {
-                    purchase.items.forEach(mapItemToReviewExists.bind(null, purchase, acc));
-                    return acc;
-                };
-
-                const mapItemToReviewExists = (purchase, acc, item) => {
-                    acc[`${purchase.CartID}-${item.productID}`] = item.reviewExists;
-                };
-
-                const detailedPurchases = await fetchDetailedPurchases(carts);
                 setPurchases(detailedPurchases);
-                setReviewExists(mapReviewExists(detailedPurchases));
+                setReviewExists(reviewExistsMap);
+                setExistingReviews(existingReviewsMap);
+                setRatings(ratings);
+                setComments(comments);
             } catch (error) {
                 console.error('Error fetching purchase history or reviews:', error);
                 setError('Failed to load purchase history or reviews. Please try again later.');
@@ -122,20 +126,17 @@ const PurchaseHistory = () => {
                 comment,
                 rate
             });
-            
+
             const productResponse = await axios.get(`${API_BASE_URL}/products/${productID}`);
             const currentRateCount = productResponse.data.rateCount || 0;
             const currentTotalRate = productResponse.data.totalRate || 0;
             await axios.put(`${API_BASE_URL}/products/${productID}`, {
                 rateCount: currentRateCount + 1,
-                totalRate: currentTotalRate + rate
+                totalRate: currentTotalRate + parseInt(rate)
             });
-            
+
             alert('Review submitted successfully!');
-            
-            // Refresh the page to prevent double submission
             window.location.reload();
-            
         } catch (error) {
             console.error('Error submitting review:', error);
             alert('Failed to submit review. Please try again.');
@@ -144,6 +145,7 @@ const PurchaseHistory = () => {
 
     if (loading) return <div className={styles.loading}>Loading...</div>;
     if (error) return <div className={styles.errorMessage}>{error}</div>;
+
     return (
         <div className={styles.historyBackground}>
             <NavBar />
@@ -166,45 +168,56 @@ const PurchaseHistory = () => {
                                         </tr>
                                         <tr>
                                             <th>Order Date:</th>
-                                            <td>{purchase.purchaseDate}</td>
+                                            <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr className={styles.tableHeader}>
                                             <th>Product Name</th>
                                             <th>Quantity</th>
-                                            <th>Rate (1-5)</th>
+                                            <th>Rating (1-5)</th>
                                             <th>Comment</th>
                                             <th>Action</th>
                                         </tr>
                                         {purchase.items.map((item) => {
                                             const key = `${purchase.CartID}-${item.productID}`;
+                                            const existingReview = existingReviews[key];
                                             return (
                                                 <tr key={item.productID}>
                                                     <td>{item.productName}</td>
                                                     <td>{item.quantity}</td>
                                                     <td>
-                                                        <select
-                                                            value={ratings[key] || ''}
-                                                            onChange={(e) => handleRatingChange(purchase.CartID, item.productID, e.target.value)}
-                                                            className={styles.ratingSelect}
-                                                            disabled={reviewExists[key]}
-                                                        >
-                                                            <option value="">Select Rating</option>
-                                                            {[1, 2, 3, 4, 5].map((num) => (
-                                                                <option key={num} value={num}>{num}</option>
-                                                            ))}
-                                                        </select>
+                                                        {existingReview ? (
+                                                            <span className={styles.readOnlyReview}>{existingReview.rate}</span>
+                                                        ) : (
+                                                            <select
+                                                                value={ratings[key] || ''}
+                                                                onChange={(e) => handleRatingChange(purchase.CartID, item.productID, e.target.value)}
+                                                                className={styles.ratingSelect}
+                                                                disabled={reviewExists[key]}
+                                                            >
+                                                                <option value="">Select Rating</option>
+                                                                {[1, 2, 3, 4, 5].map((num) => (
+                                                                    <option key={num} value={num}>{num}</option>
+                                                                ))}
+                                                            </select>
+                                                        )}
                                                     </td>
                                                     <td>
-                                                        <input
-                                                            type="text"
-                                                            value={comments[key] || ''}
-                                                            onChange={(e) => handleCommentChange(purchase.CartID, item.productID, e.target.value)}
-                                                            placeholder="Add a comment..."
-                                                            className={styles.commentInput}
-                                                            disabled={reviewExists[key]}
-                                                        />
+                                                        {existingReview ? (
+                                                            <span className={styles.readOnlyReview}>
+                                                                {existingReview.comment || 'No comment'}
+                                                            </span>
+                                                        ) : (
+                                                            <input
+                                                                type="text"
+                                                                value={comments[key] || ''}
+                                                                onChange={(e) => handleCommentChange(purchase.CartID, item.productID, e.target.value)}
+                                                                placeholder="Add a comment..."
+                                                                className={styles.commentInput}
+                                                                disabled={reviewExists[key]}
+                                                            />
+                                                        )}
                                                     </td>
                                                     <td>
                                                         <button
