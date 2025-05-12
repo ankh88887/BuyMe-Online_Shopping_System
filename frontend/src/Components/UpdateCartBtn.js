@@ -5,59 +5,56 @@ import { CartContext } from "./CartContext"
 export default function UpdateCartBtn({ productID, stock }) {
 
     const { cartItems, setCartItems } = useContext(CartContext)
-    let productIndexInCart = cartItems.findIndex((element) => {
+    const productIndexInCart = cartItems.findIndex((element) => {
         return element.id === productID
     })
-    let [numInCart, setNumInCart] = useState(
-        (productIndexInCart === -1) ? 0 : cartItems[productIndexInCart].quantity
-    )
+    let numInCart = productIndexInCart === -1 ? 0 : cartItems[productIndexInCart].quantity;
 
     const Add = () => {
-
         if (productIndexInCart === -1) {
-            setCartItems(
-                [{
-                    id: productID,
-                    quantity: 1
-                },
-                ...cartItems]
-            )
-        }
-        else {
-            let newCartArray = [...cartItems]
+            setCartItems([
+                { id: productID, quantity: 1 },
+                ...cartItems,
+            ]);
+        } else {
+            const newCartArray = [...cartItems]
             newCartArray[productIndexInCart].quantity++
             setCartItems(newCartArray)
         }
-
-        setNumInCart(numInCart + 1)
-    }
+        numInCart++
+    };
 
     const Subtract = () => {
-
         if (cartItems[productIndexInCart].quantity === 1) {
-            let newCartArray = [...cartItems]
+            const newCartArray = [...cartItems]
             newCartArray.splice(productIndexInCart, 1)
             setCartItems(newCartArray)
-        }
-        else {
-            let newCartArray = [...cartItems]
+        } else {
+            const newCartArray = [...cartItems]
             newCartArray[productIndexInCart].quantity--
             setCartItems(newCartArray)
         }
-
-        setNumInCart(numInCart - 1)
-    }
-    const updateCart = () => {
-        let newCartArray = [...cartItems]
-        alert(`Product ID: ${newCartArray[productIndexInCart].id} has ${newCartArray[productIndexInCart].quantity} in the cart!`);
-    }
+        numInCart--
+    };
 
     return (
         <div style={{ display: "flex", alignItems: "center" }}>
-            <p style={{margin: 0}}>Quantity in your shopping cart: </p >
-            <button className={numInCart === 0 ? style.BtnDisable : style.BtnAble} onClick={Subtract} disabled={numInCart === 0}>⊖</button>
+            <p style={{ margin: 0 }}>Quantity in your shopping cart: </p>
+            <button
+                className={numInCart === 0 ? style.BtnDisable : style.BtnAble}
+                onClick={Subtract}
+                disabled={numInCart === 0}
+            >
+                ⊖
+            </button>
             <span className={style.Qty}>{numInCart}</span>
-            <button className={numInCart >= stock ? style.BtnDisable : style.BtnAble} onClick={Add} disabled={numInCart >= stock}>⊕</button>
+            <button
+                className={numInCart >= stock ? style.BtnDisable : style.BtnAble}
+                onClick={Add}
+                disabled={numInCart >= stock}
+            >
+                ⊕
+            </button>
         </div>
-    )
+    );
 }

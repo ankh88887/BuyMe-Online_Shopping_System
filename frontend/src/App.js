@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import NavBar from './Components/NavBar';
 import Home from './Pages/Home';
@@ -107,12 +107,23 @@ function AppContent({ navHeight }) {
               </ProtectedRoute>
             }
           />
-          <Route path="/product" element={<Product />}>
-            <Route path=":id" element={<Product />} />
-          </Route>
-          <Route path="/search" element={<Search />}>
-            <Route path=":keywords" element={<Search />} />
-          </Route>
+          <Route
+            path="/product/:id"
+            element={
+              <ProtectedRoute>
+                <Product />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search/:keywords"
+            element={
+              <ProtectedRoute>
+                <Search />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="/payment"
             element={
@@ -121,7 +132,7 @@ function AppContent({ navHeight }) {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<p>404 not found</p>} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
     </div>
