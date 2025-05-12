@@ -5,6 +5,13 @@ BuyMe is an online shopping system.
 ## Getting Started
 
 ### Prerequisites
+# Project Title: BuyMe
+
+BuyMe is an online shopping system.
+
+## Getting Started
+
+### Prerequisites
 
 Ensure you have the following software and tools installed before setting up the project:
 
