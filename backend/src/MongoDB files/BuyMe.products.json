@@ -7,9 +7,9 @@
   "productImageDir": "apple.jpg",
   "price": 5,
   "description": "apple is good for health",
-  "stock": 30,
-  "rateCount": 2,
-  "totalRate": 9
+  "stock": 10,
+  "rateCount": 3,
+  "totalRate": 13
 },
 {
   "_id": {
@@ -20,7 +20,7 @@
   "productImageDir": "orange.jpg",
   "price": 3,
   "description": "sweet orange",
-  "stock": 40,
+  "stock": 20,
   "rateCount": 1,
   "totalRate": 4
 },
@@ -33,9 +33,9 @@
   "productImageDir": "mango.jpg",
   "price": 4,
   "description": "feash mango",
-  "stock": 50,
-  "rateCount": 1,
-  "totalRate": 5
+  "stock": 45,
+  "rateCount": 2,
+  "totalRate": 8
 },
 {
   "_id": {
@@ -46,7 +46,7 @@
   "productImageDir": "watermelon.jpg",
   "price": 20,
   "description": "summer eat watermelon",
-  "stock": 100,
+  "stock": 90,
   "rateCount": 0,
   "totalRate": 0
 },
@@ -72,7 +72,7 @@
   "productImageDir": "white-carrot.jpg",
   "price": 5,
   "description": "white radish makes soup",
-  "stock": 45,
+  "stock": 60,
   "rateCount": 0,
   "totalRate": 0
 }]
