@@ -5,16 +5,14 @@ exports.updateProduct = async (req, res) => {
     try {
         const updateData = {};
         
-        // Extract fields from request body that are allowed to be updated
         const { rateCount, totalRate, stock } = req.body;
         
-        // Only add fields that are provided in the request
         if (rateCount !== undefined) updateData.rateCount = rateCount;
         if (totalRate !== undefined) updateData.totalRate = totalRate;
         if (stock !== undefined) updateData.stock = stock;
         
         const product = await Product.findOneAndUpdate(
-            { productID: req.params.id },  // FIXED: Changed from req.params.productId to req.params.id
+            { productID: req.params.id }, 
             updateData,
             { new: true }
         );
@@ -75,16 +73,16 @@ exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find({})
     if (products) {
-      console.log('No of product found:', products.length) // Log the found product
+      console.log('No of product found:', products.length)
       res.json({
         products: products.map((product) => (ProductConstructor(product)))
       })
     } else {
-      res.status(404).json({ error: 'Product not found' }) // Handle not found
+      res.status(404).json({ error: 'Product not found' })
     }
   } catch (error) {
     console.error('Error fetching product:', error)
-    res.status(500).json({ error: 'Server error' }) // Handle server error
+    res.status(500).json({ error: 'Server error' })
   }
 }
 
@@ -93,17 +91,17 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const productID = req.params.id // Get the productID from the request parameters
   try {
-    const product = await Product.findOne({ productID: productID }) // Search for the product by productID
+    const product = await Product.findOne({ productID: productID })
     if (product) {
-      const constructedProduct = ProductConstructor(product) // Transform the product
-      console.log('Product found:', constructedProduct.productName) // Log the transformed product
-      res.json(constructedProduct) // Return the transformed product
+      const constructedProduct = ProductConstructor(product)
+      console.log('Product found:', constructedProduct.productName)
+      res.json(constructedProduct)
     } else {
-      res.status(404).json({ error: 'Product not found' }) // Handle not found
+      res.status(404).json({ error: 'Product not found' })
     }
   } catch (error) {
     console.error('Error fetching product:', error)
-    res.status(500).json({ error: 'Server error' }) // Handle server error
+    res.status(500).json({ error: 'Server error' })
   }
 }
 
@@ -117,16 +115,16 @@ exports.getProductsByKeyword = async (req, res) => {
     const products = await Product.find({ productName: { $regex: keyword, $options: 'i' } })
 
     if (products.length > 0) {
-      console.log(`${products.length} product(s) found with keyword: ${keyword}`) // Log the number of products found
+      console.log(`${products.length} product(s) found with keyword: ${keyword}`)
       res.json({
-        products: products.map((product) => ProductConstructor(product)) // Transform the products using ProductConstructor
+        products: products.map((product) => ProductConstructor(product))
       })
     } else {
-      console.log(`No products found with keyword: ${keyword}`) // Log no products found
-      res.status(404).json({ error: 'No products found' }) // Handle not found
+      console.log(`No products found with keyword: ${keyword}`)
+      res.status(404).json({ error: 'No products found' })
     }
   } catch (error) {
-    console.error('Error fetching products by keyword:', error) // Log the error
-    res.status(500).json({ error: 'Server error' }) // Handle server error
+    console.error('Error fetching products by keyword:', error)
+    res.status(500).json({ error: 'Server error' })
   }
 }

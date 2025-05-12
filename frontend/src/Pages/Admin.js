@@ -1,4 +1,3 @@
-import React from "react";
 import AdminPage from "../Components/AdminPage";
 // All admin CRUD operations for events and users
 

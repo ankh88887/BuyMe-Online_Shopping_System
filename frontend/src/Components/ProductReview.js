@@ -11,15 +11,15 @@ export default function ProductReview({ reviewsJSON }) {
         if (reviewsJSON && reviewsJSON.length > 0) {
             var totalRating = 0
             reviewsJSON.forEach((r) => {
-                totalRating += r.rate; // Sum up the ratings
+                totalRating += r.rate;
             })
             setAverageRating(totalRating / reviewsJSON.length);
-            setProductTotalRatingCount(reviewsJSON.length); // Set the total rating count
+            setProductTotalRatingCount(reviewsJSON.length);
         }
     }, [reviewsJSON])
 
     if (!review) {
-        return <p>Loading...</p> // Show loading message while fetching
+        return <p>Loading...</p>
     }
 
 

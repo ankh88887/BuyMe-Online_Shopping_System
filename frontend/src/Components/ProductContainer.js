@@ -9,7 +9,7 @@ export default function ProductContainer({ productJSON }) {
     }, [productJSON])
 
     if (!product) {
-        return <p>Loading...</p> // Show loading message while fetching
+        return <p>Loading...</p>
     }
 
     return (

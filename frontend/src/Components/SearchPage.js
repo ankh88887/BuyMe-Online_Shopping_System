@@ -10,7 +10,6 @@ export default function Search() {
     const [minPriceLimit, setMinPriceLimit] = useState(0)
     const [maxPriceLimit, setMaxPriceLimit] = useState(100)
 
-    // Fetch product data from backend
     const fetchProduct = async (productKeywords) => {
         try {
             console.log("Fetching products with keywords:", productKeywords)
@@ -46,7 +45,7 @@ export default function Search() {
     }
 
     const handleNumberInput = (event) => {
-        const value = event.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+        const value = event.target.value.replace(/[^0-9]/g, "");
         event.target.value = value;
     };
 

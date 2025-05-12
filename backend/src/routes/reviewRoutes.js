@@ -9,8 +9,6 @@ const {
   createReview
 } = require('../controllers/reviewController');
 
-// POST /reviews - Create a new review
-
 router.post('/', createReview);
 router.get('/check', checkReviewByUserID);
 router.get('/', getReviews)

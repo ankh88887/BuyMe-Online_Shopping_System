@@ -13,7 +13,7 @@ export default function Home(props) {
 
     const fetchProduct = async () => {
         try {
-            const response = await fetch(`http://localhost:5005/api/products/`) // Backend API
+            const response = await fetch(`http://localhost:5005/api/products/`)
             if (!response.ok) {
                 throw new Error("Product not found")
             }

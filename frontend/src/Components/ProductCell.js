@@ -10,7 +10,7 @@ export default function ProductCell({ productJSON }) {
     }, [productJSON])
 
     if (!product) {
-        return <p>Loading...</p> // Show loading message while fetching
+        return <p>Loading...</p>
     }
     return (
         <div className={styles.productCell}>

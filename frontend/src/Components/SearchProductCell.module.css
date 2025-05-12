@@ -5,11 +5,9 @@
     align-items: center;
     justify-content: space-between;
     border: 1px solid #ccc;
-    /* Optional: Add a border */
     padding: 10px;
     box-sizing: border-box;
     background-color: #f9f9f9;
-    /* Optional: Add a background color */
 }
 
 .image {
@@ -64,7 +62,7 @@
 }
 
 button:hover {
-    background-color: #e0e0e0; /* Darken the button on hover */
+    background-color: #e0e0e0;
 }
 
 .productName {

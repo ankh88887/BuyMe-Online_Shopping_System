@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from '../Components/NavBar';
@@ -11,7 +11,7 @@ const API_BASE_URL = 'http://localhost:5005/api';
 const ShoppingCart = () => {
     const [cartWithDetails, setCartWithDetails] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [productCache, setProductCache] = useState({}); // Cache for product details
+    const [productCache, setProductCache] = useState({});
     const navigate = useNavigate();
     const { currentUser } = useContext(CurrentLoginUser);
     const { cartItems, setCartItems } = useContext(CartContext);

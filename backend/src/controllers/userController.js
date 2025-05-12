@@ -19,19 +19,17 @@ function UserConstructor(user) {
 exports.getUserByUsername = async (req, res) => {
   const userName = req.params.userName // Get the UserName from the request parameters
   try {
-    const user = await User.findOne({ userName: userName }) // Search for the user by userID
-    console.log('Searching for user with:', userName) // Log the search
-    console.log('User found:', user) // Log the found user
+    const user = await User.findOne({ userName: userName })
     if (user) {
-      const constructedUser = UserConstructor(user) // Transform the user
-      console.log('User found:', constructedUser) // Log the transformed User
-      res.json(constructedUser) // Return the transformed User
+      const constructedUser = UserConstructor(user)
+      console.log(f`User with username:${userName}found:\n${constructedUser}`)
+      res.json(constructedUser)
     } else {
-      res.status(404).json({ error: 'User not found' }) // Handle not found
+      res.status(404).json({ error: 'User not found' })
     }
   } catch (error) {
     console.error('Error fetching user:', error)
-    res.status(500).json({ error: 'Server error' }) // Handle server error
+    res.status(500).json({ error: 'Server error' })
   }
 }
 
@@ -39,7 +37,6 @@ exports.getUserByUsername = async (req, res) => {
 
 // @desc    Let users to Login
 // @route   GET /api/Users/login
-
 exports.LoginUser = async (req, res) => {
   const { userNameOrEmail, password } = req.body
 
@@ -79,7 +76,6 @@ exports.LoginUser = async (req, res) => {
 
 // @desc    First time register a user (default is not admin)
 // @route   GET /api/Users/register
-
 exports.RegisterUser = async (req, res) => {
   try {
     const { username, email, password, confirmPassword } = req.body
@@ -94,7 +90,7 @@ exports.RegisterUser = async (req, res) => {
     const existingUser = await User.findOne({
       $or: [{ userName: username }, { email: email }],
     })
-    console.log('Existing user:', existingUser) // Log the search
+    console.log('Existing user:', existingUser)
     if (existingUser) {
       if (existingUser.userName === username) {
         return res.status(400).json({ message: 'Username is already taken' })
@@ -106,21 +102,17 @@ exports.RegisterUser = async (req, res) => {
 
     // Generate userID based on the latest user in the database
     const latestUser = await User.findOne().sort({ userID: -1 }) // Find the user with the highest userID
-    const userID = latestUser ? parseInt(latestUser.userID) + 1 : 1 // If no users exist, start with userID = 1
+    const userID = latestUser ? parseInt(latestUser.userID) + 1 : 1
 
     // Create a new user
     const newUser = new User({
       userID: userID,
       isAdmin: false, // Default to false
       userName: username,
-      password: await bcrypt.hash(password, 10), // Hash the password before saving
+      password: await bcrypt.hash(password, 10),
       email: email,
       address: "",
     })
-
-    console.log(username, email, password, confirmPassword) // Log the input values for debugging
-    // Check if the user exists in the database
-
     await newUser.save()
 
     res.status(201).json({
@@ -141,7 +133,6 @@ exports.RegisterUser = async (req, res) => {
 
 // @desc    change passoword requested by user
 // @route   GET /api/Users/forget-password/
-
 exports.ForgetPassword = async (req, res) => {
   try {
     const { userName, email, password, confirmPassword } = req.body
@@ -162,9 +153,6 @@ exports.ForgetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 8 characters long and contain both letters and numbers.' })
     }
 
-    console.log(userName, email, password, confirmPassword) // Log the input values for debugging
-    // Check if the user exists in the database
-    // Find the user by username and email
     const user = await User.findOne({ userName, email })
 
     if (!user) {
@@ -191,53 +179,35 @@ exports.ForgetPassword = async (req, res) => {
 exports.getUserById = async (req, res) => {
   const userID = req.params.id; // Get the UserID from the request parameters
   try {
-    const user = await User.findOne({ userID: userID }); // Search for the user by userID
+    const user = await User.findOne({ userID: userID });
     if (user) {
-      const constructedUser = UserConstructor(user); // Transform the user
-      console.log('User found:', constructedUser); // Log the transformed User
-      res.json(constructedUser); // Return the transformed User
+      const constructedUser = UserConstructor(user);
+      console.log(f`User with userID:${userID}found:\n${constructedUser}`)
+      res.json(constructedUser);
     } else {
-      res.status(404).json({ error: 'User not found' }); // Handle not found
+      res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Server error' }); // Handle server error
+    res.status(500).json({ error: 'Server error' });
   }
-};// @desc    Get all Users
+};
+
+// @desc    Get all Users
 // @route   GET /api/users
-// @access  Public
 exports.getUsers = async (req, res) => {
   try {
     const User = await Users.find({})
     if (User) {
-      console.log('User found:', User) // Log the found user
+      console.log('No of users found:', User.length)
       res.json({
         users: User.map((User) => (UserConstructor(User)))
       })
     } else {
-      res.status(404).json({ error: 'User not found' }) // Handle not found
+      res.status(404).json({ error: 'User not found' })
     }
   } catch (error) {
     console.error('Error fetching User:', error)
-    res.status(500).json({ error: 'Server error' }) // Handle server error
-  }
-}
-
-// @desc    Get single User by ID
-// @route   GET /api/users/:id
-exports.getUserById = async (req, res) => {
-  const userID = req.params.id // Get the UserID from the request parameters
-  try {
-    const user = await User.findOne({ userID: userID }) // Search for the user by userID
-    if (user) {
-      const constructedUser = UserConstructor(user) // Transform the user
-      console.log('User found:', constructedUser.userName) // Log the transformed User
-      res.json(constructedUser) // Return the transformed User
-    } else {
-      res.status(404).json({ error: 'User not found' }) // Handle not found
-    }
-  } catch (error) {
-    console.error('Error fetching user:', error)
-    res.status(500).json({ error: 'Server error' }) // Handle server error
+    res.status(500).json({ error: 'Server error' })
   }
 }

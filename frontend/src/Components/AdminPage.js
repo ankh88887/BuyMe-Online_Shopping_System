@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Alert from "./AdminPageAlert";
 import "./AdminPage.css";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -16,7 +16,6 @@ const AdminPage = () => {
         setShowPassword(!showPassword);
     };
     const [formData, setFormData] = useState({
-        // productID: "",
         productName: "",
         price: "",
         stock: "",
@@ -42,7 +41,6 @@ const AdminPage = () => {
 
     const handleReset = useCallback(() => {
         const initialFormData = {
-            // productID: "",
             productName: "",
             price: "",
             stock: "",
@@ -587,10 +585,6 @@ const AdminPage = () => {
                     <form onSubmit={handleSubmit}>
                         {activeTab === "newProduct" && (
                             <div className="form-content">
-                                {/* <div className="form-row-1">
-                                    <label>Product ID:</label>
-                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} required />
-                                </div> */}
                                 <div className="form-row-1">
                                     <label>Product name:</label>
                                     <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} />
@@ -682,10 +676,6 @@ const AdminPage = () => {
                         
                         {activeTab === "modifyProduct" && showProductForm && (
                             <div className="form-content">
-                                {/* <div className="form-row-1">
-                                    <label>Product ID:</label>
-                                    <input type="text" name="productID" value={formData.productID || ""} onChange={handleInputChange} readOnly />
-                                </div> */}
                                 <div className="form-row-1">
                                     <label>Product name:</label>
                                     <input type="text" name="productName" value={formData.productName || ""} onChange={handleInputChange} required />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
@@ -14,7 +14,7 @@ const PurchaseHistory = () => {
     const [ratings, setRatings] = useState({});
     const [comments, setComments] = useState({});
     const [reviewExists, setReviewExists] = useState({});
-    const [existingReviews, setExistingReviews] = useState({}); // Store review details
+    const [existingReviews, setExistingReviews] = useState({});
 
     const navigate = useNavigate();
     const { currentUser } = useContext(CurrentLoginUser);
@@ -44,7 +44,7 @@ const PurchaseHistory = () => {
                         productName: productResponse.data.productName || `Product ${productID} (Not Found)`,
                         quantity,
                         reviewExists: reviewResponse.data.exists,
-                        review: reviewResponse.data.review // Include review details if it exists
+                        review: reviewResponse.data.review
                     };
                 };
 

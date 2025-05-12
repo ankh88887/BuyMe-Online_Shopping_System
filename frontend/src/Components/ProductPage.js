@@ -10,12 +10,12 @@ export default function ProductData() {
 
     const fetchProduct = async (productID) => {
         try {
-            const response = await fetch(`http://localhost:5005/api/products/${productID}`) // Backend API
+            const response = await fetch(`http://localhost:5005/api/products/${productID}`)
             if (!response.ok) {
                 throw new Error('Product not found')
             }
             const productData = await response.json()
-            setProduct(productData); // Update state with product data
+            setProduct(productData);
         } catch (error) {
             console.error('Error fetching product:', error)
         }
@@ -42,7 +42,6 @@ export default function ProductData() {
                         const user = await userResponse.json();
                         console.log("User data fetched:", user);
 
-                        // Return the new review with userName
                         return {
                             ...review,
                             userName: user.userName,
@@ -72,12 +71,12 @@ export default function ProductData() {
     }
 
     useEffect(() => {
-        fetchProduct(id) // Fetch product when component mounts
-        fetechreview(id) // Fetch review when component mounts        
+        fetchProduct(id)
+        fetechreview(id)   
     }, [id])
 
     if (!product) {
-        return <p>Loading...</p> // Show loading message while fetching
+        return <p>Loading...</p>
     }
 
     return (

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import "./AdminPageAlert.css";
 
 const Alert = ({ message, type, onClose }) => {
