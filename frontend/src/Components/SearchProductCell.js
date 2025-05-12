@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './SearchProductCell.module.css';
-import AddToCart from './UpdateCartBtn'
+import UpdateCart from './UpdateCartBtn'
 
 export default function SearchProductCell({ productJSON }) {
     const [product, setProduct] = useState(null)
@@ -24,7 +24,7 @@ export default function SearchProductCell({ productJSON }) {
                         <p className={styles.productDetail}>Rate: {product.rateCount !== 0 ? (product.totalRate / product.rateCount).toFixed(1) : "no comment yet"}</p>
                         <p className={styles.productDetail}>{product.description}</p>
                 </div>
-                <AddToCart productID={product.productID} />
+                <UpdateCart productID={product.productID} stock={product.stock} />
             </div>
         </div>
     )

@@ -109,9 +109,9 @@ export default function Search() {
                     </h2>
 
                     <div className={style.scrollContainer}>
-                        {filteredProduct.map((productItem, index) => (
+                        {filteredProduct.map((productItem) => (
                             <SearchProductCell
-                                key={productItem.id || index} // Use productItem.id if available, otherwise fallback to index
+                                key={productItem.id}
                                 productJSON={productItem}
                             />
                         ))}
