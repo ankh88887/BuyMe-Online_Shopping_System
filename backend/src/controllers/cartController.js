@@ -59,7 +59,6 @@ const getActiveCart = async (req, res) => {
             }
         }
 
-        console.log('Returning existing cart:', cart);
         res.send(cart);
     } catch (error) {
         console.error('Error fetching active cart:', error);

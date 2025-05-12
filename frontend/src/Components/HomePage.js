@@ -8,7 +8,7 @@ export default function Home(props) {
     const [isHovered, setIsHovered] = useState(false)
     const [products, setProducts] = useState()
     const { currentUser } = useContext(CurrentLoginUser);
-    const maxProductInCarousel = 3;
+    var maxProductInCarousel = 3;
 
 
     const fetchProduct = async () => {
@@ -18,7 +18,6 @@ export default function Home(props) {
                 throw new Error("Product not found")
             }
             const productData = await response.json();
-            console.log("Product data fetched:", productData);
             const sortedProducts = productData.products.sort((a, b) => {
                 const avgRatingA = a.rateCount > 0 ? a.totalRate / a.rateCount : 0;
                 const avgRatingB = b.rateCount > 0 ? b.totalRate / b.rateCount : 0;
@@ -32,7 +31,6 @@ export default function Home(props) {
     };
 
     useEffect(() => {
-        console.log("Fetching products...");
         fetchProduct();
     }, []);
 

@@ -293,7 +293,7 @@ const UserProfilePage = () => {
 
   return (
     <div className="user-profile-unique-container">
-      <div className="row justify-content-center">
+      <div className="row justify-content-center" style={{ width: "100%" }}>
         <div className="col-md-8">
           <div className="user-profile-unique-card">
             <div className="user-profile-unique-header">

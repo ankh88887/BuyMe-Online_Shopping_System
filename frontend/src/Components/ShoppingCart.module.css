@@ -42,7 +42,8 @@ table {
     margin-top: 20px;
 }
 
-th, td {
+th,
+td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
@@ -73,6 +74,15 @@ tr:hover {
 .BtnAble:hover {
     color: #777777;
     background-color: transparent;
+}
+
+.AddBtndisabled {
+    background-color: transparent;
+    color: #666666;
+    border: none;
+    cursor: not-allowed;
+    font-size: 20px;
+    pointer-events: none;
 }
 
 .BtnDisable {
@@ -153,7 +163,8 @@ tr:hover {
         padding: 20px;
     }
 
-    th, td {
+    th,
+    td {
         padding: 8px;
         font-size: 14px;
     }

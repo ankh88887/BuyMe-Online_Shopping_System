@@ -222,7 +222,7 @@ const PurchaseHistory = () => {
                                                     <td>
                                                         <button
                                                             onClick={() => handleSubmitReview(purchase.CartID, item.productID)}
-                                                            className={styles.submitButton}
+                                                            className={reviewExists[key] ? styles.submitButtonDisabled : styles.submitButton}
                                                             disabled={reviewExists[key]}
                                                         >
                                                             {reviewExists[key] ? 'Submitted' : 'Submit'}

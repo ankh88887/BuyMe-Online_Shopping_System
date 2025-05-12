@@ -39,6 +39,7 @@ const ShoppingCart = () => {
                             newCache[item.id] = {
                                 name: product.productName,
                                 cost: product.price,
+                                stock: product.stock,
                             };
                         } catch (error) {
                             console.error(`Error fetching product ${item.id}:`, error);
@@ -54,6 +55,7 @@ const ShoppingCart = () => {
                         name: newCache[item.id].name,
                         quantity: item.quantity,
                         cost: newCache[item.id].cost,
+                        stock: newCache[item.id].stock,
                     });
                 }
 
@@ -211,8 +213,9 @@ const ShoppingCart = () => {
                                                 </button>
                                                 <span className={styles.Qty}>{item.quantity}</span>
                                                 <button
-                                                    className={styles.BtnAble}
+                                                    className={item.quantity >= item.stock ? styles.AddBtndisabled : styles.BtnAble}
                                                     onClick={() => handleQuantityChange(item.id, 1)}
+                                                    disabled={item.quantity >= item.stock}
                                                 >
                                                     ⊕
                                                 </button>

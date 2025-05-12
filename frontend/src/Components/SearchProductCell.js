@@ -21,7 +21,7 @@ export default function SearchProductCell({ productJSON }) {
             <div className={styles.productContainer}>
                 <div className={styles.productDetailContainer}>
                         <h2 className={styles.productName}>{product.productName} ${product.price} </h2>
-                        <p className={styles.productDetail}>Rate: {product.rateCount !== 0 ? product.totalRate / product.rateCount : "no comment yet"}</p>
+                        <p className={styles.productDetail}>Rate: {product.rateCount !== 0 ? (product.totalRate / product.rateCount).toFixed(1) : "no comment yet"}</p>
                         <p className={styles.productDetail}>{product.description}</p>
                 </div>
                 <AddToCart productID={product.productID} />

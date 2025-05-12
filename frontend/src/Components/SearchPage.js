@@ -45,6 +45,23 @@ export default function Search() {
         setMaxPriceLimit(event.target.value)
     }
 
+    const handleNumberInput = (event) => {
+        const value = event.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+        event.target.value = value;
+    };
+
+    const handleMinBlur = () => {
+        if (parseInt(minPriceLimit) > parseInt(maxPriceLimit)) {
+            setMinPriceLimit(maxPriceLimit);
+        }
+    };
+
+    const handleMaxBlur = () => {
+        if (parseInt(maxPriceLimit) < parseInt(minPriceLimit)) {
+            setMaxPriceLimit(minPriceLimit);
+        }
+    };
+
     const filterProduct = () => {
         const filtered = product.filter(
             (productItem) =>
@@ -68,6 +85,8 @@ export default function Search() {
                             max={maxPriceLimit}
                             value={minPriceLimit}
                             onChange={handleMinPriceLimit}
+                            onInput={handleNumberInput}
+                            onBlur={handleMinBlur}
                             style={{ width: "120px" }}
                             key="minPriceLimit"
                         />
@@ -79,6 +98,8 @@ export default function Search() {
                             min={minPriceLimit}
                             value={maxPriceLimit}
                             onChange={handleMaxPriceLimit}
+                            onInput={handleNumberInput}
+                            onBlur={handleMaxBlur}
                             style={{ width: "120px" }}
                             key="maxPriceLimit"
                         />

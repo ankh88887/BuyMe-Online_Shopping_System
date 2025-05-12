@@ -48,14 +48,12 @@ exports.LoginUser = async (req, res) => {
   }
 
   try {
-    console.log('Searching for user with:', userNameOrEmail)
     const user = await User.findOne({
       $or: [
         { userName: { $regex: userNameOrEmail, $options: 'i' } }, // Case-insensitive search for username
         { email: { $regex: userNameOrEmail, $options: 'i' } }    // Case-insensitive search for email
       ]
     })
-    console.log('User found:', user) // Log the found user
 
     if (!user) {
       console.log('User not found')
@@ -64,6 +62,7 @@ exports.LoginUser = async (req, res) => {
 
     const isPasswordMatch = await bcrypt.compare(password, user.password)
     if (isPasswordMatch) {
+      console.log('User logged in:', userNameOrEmail)
       res.json(UserConstructor(user))
     }
     else {
