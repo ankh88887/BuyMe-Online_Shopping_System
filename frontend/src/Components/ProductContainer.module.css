@@ -22,7 +22,7 @@
     gap: 30px;
 }
 
-img {
+.productDetails img {
     width: 400px;
     height: 400px;
     object-fit: cover;
@@ -30,6 +30,7 @@ img {
 }
 
 .productTable {
+    width: 1110px;
     border: 3px solid black;
     min-width: 1110px;
     height: 450px;

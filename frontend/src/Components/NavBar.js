@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext, useState} from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
+import { CartContext } from './CartContext'; // Import CartContext
 import styles from './NavBar.module.css';
 
 export default function NavBar() {
     const [keywords, setKeywords] = useState('');
     const { currentUser, setCurrentUser } = useContext(CurrentLoginUser);
+    const { setCartItems } = useContext(CartContext); // Access setCartItems from CartContext
     const navigate = useNavigate(); // Hook for navigation
 
     const logoutOnClick = () => {
@@ -13,6 +15,7 @@ export default function NavBar() {
             console.log(`Logging out user: ${currentUser.userName}`);
             setCurrentUser(null); // Clear the current user
             localStorage.removeItem('currentUser'); // Clear user from localStorage
+            setCartItems([]); // Clear all items in the cart
             navigate('/logout'); // Redirect to the logout page
         }
     };

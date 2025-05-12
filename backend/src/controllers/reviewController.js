@@ -50,4 +50,34 @@ exports.getReviewsByProductsId = async (req, res) => {
         console.error('Error fetching reviews by product ID:', error)
         res.status(500).json({ error: 'Server error' })
     }
-}
+};
+
+exports.checkReviewByUserID = async (req, res) => {
+    try {
+        const { userID, productID } = req.query;
+        const existingReview = await Reviews.findOne({ userID, productID });
+        if (existingReview) {
+            res.json({
+                exists: true,
+                review: reviewConstructor(existingReview)
+            });
+        } else {
+            res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error('Error checking review:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.createReview = async (req, res) => {
+    try {
+        const { reviewID, productID, userID, comment, rate } = req.body;
+        const review = new Reviews({ reviewID, productID, userID, comment, rate });
+        await review.save();
+        res.status(201).send(review);
+    } catch (error) {
+        console.error('Error creating review:', error);
+        res.status(500).send('Server error');
+    }
+};

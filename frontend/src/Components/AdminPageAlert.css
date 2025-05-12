@@ -1,6 +1,6 @@
-.alert {
+/* .alert {
     position: sticky;
-    top: 160px; 
+    top: 100px; 
     right: 2%; 
     padding: 1rem;
     border-radius: 5px; 
@@ -8,18 +8,25 @@
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    z-index: 10000; 
+    z-index: 10000;
     max-width: 100%; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+} */
+
+.alert {
+    color: #fff; 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
 .alert.success {
     background-color: #28a745;
+    color: #fff; 
     opacity: 0.9;
 }
 
 .alert.error {
     background-color: #dc3545;
+    color: #fff; 
     opacity: 0.9;
 }
 
@@ -28,7 +35,7 @@
     border: none;
     color: white;
     font-size: 1rem; 
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {

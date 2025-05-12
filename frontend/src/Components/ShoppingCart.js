@@ -1,60 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import NavBar from './NavBar';
+import axios from 'axios';
+import NavBar from '../Components/NavBar';
 import styles from './ShoppingCart.module.css';
+import { CurrentLoginUser } from '../Components/CurrentLoginUser';
+import { CartContext } from '../Components/CartContext';
+
+const API_BASE_URL = 'http://localhost:5005/api';
 
 const ShoppingCart = () => {
-    const [cartItems, setCartItems] = useState([]);
+    const [cartWithDetails, setCartWithDetails] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [productCache, setProductCache] = useState({}); // Cache for product details
     const navigate = useNavigate();
+    const { currentUser } = useContext(CurrentLoginUser);
+    const { cartItems, setCartItems } = useContext(CartContext);
+    
+    const userID = currentUser?.userID;
 
-    // Demo
-    const demoData = [
-        { id: '1', name: 'Laptop', quantity: 1, cost: 999.99 },
-        { id: '2', name: 'Mouse', quantity: 2, cost: 29.99 },
-        { id: '3', name: 'Keyboard', quantity: 1, cost: 59.99 },
-    ];
-
+    // Fetch product details only for new or uncached products
     useEffect(() => {
-        // Demo
-        setCartItems(demoData);
-        setLoading(false);
-    }, []);
+        const fetchProductDetails = async () => {
+            if (!userID) {
+                navigate('/login');
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const newCache = { ...productCache };
+                const itemsWithDetails = [];
+
+                for (const item of cartItems) {
+                    if (!newCache[item.id]) {
+                        try {
+                            const productResponse = await axios.get(`${API_BASE_URL}/products/${item.id}`);
+                            const product = productResponse.data;
+                            newCache[item.id] = {
+                                name: product.productName,
+                                cost: product.price,
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching product ${item.id}:`, error);
+                            newCache[item.id] = {
+                                name: `Product ${item.id} (Not Found)`,
+                                cost: 0,
+                            };
+                        }
+                    }
+
+                    itemsWithDetails.push({
+                        id: item.id,
+                        name: newCache[item.id].name,
+                        quantity: item.quantity,
+                        cost: newCache[item.id].cost,
+                    });
+                }
+
+                setProductCache(newCache);
+                setCartWithDetails(itemsWithDetails);
+            } catch (error) {
+                console.error('Error preparing cart:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (cartItems.length > 0) {
+            fetchProductDetails();
+        } else {
+            setCartWithDetails([]);
+            setLoading(false);
+        }
+    }, [cartItems, userID, navigate]); // Keep dependency on cartItems for initial load or new items
+
+    // Load initial cart data from backend
+    useEffect(() => {
+        const loadInitialCart = async () => {
+            if (!userID) {
+                navigate('/login');
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const cartResponse = await axios.get(`${API_BASE_URL}/carts/active/${userID}`);
+                const cart = cartResponse.data;
+
+                if (cart && cart.items) {
+                    const backendCartItems = Object.entries(cart.items).map(([productID, quantity]) => ({
+                        id: productID,
+                        quantity: parseInt(quantity, 10),
+                    }));
+
+                    // Merge backend cart with current cartItems
+                    setCartItems(prevItems => {
+                        const mergedItems = [...prevItems];
+                        backendCartItems.forEach(backendItem => {
+                            const existingItemIndex = mergedItems.findIndex(item => item.id === backendItem.id);
+                            if (existingItemIndex === -1) {
+                                mergedItems.push(backendItem);
+                            }
+                        });
+                        return mergedItems;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading initial cart:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadInitialCart();
+
+        const handleFocus = () => {
+            loadInitialCart();
+        };
+
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [userID, navigate, setCartItems]);
 
     const handleQuantityChange = (id, delta) => {
-        setCartItems(prevItems =>
-            prevItems.map(item =>
-                item.id === id
-                    ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-                    : item
-            )
-        );
-    };
+        setCartItems(prevItems => {
+            const itemIndex = prevItems.findIndex(item => item.id === id);
+            if (itemIndex === -1) return prevItems;
 
-    const handleQuantityInput = (id, value) => {
-        const newQuantity = parseInt(value, 10);
-        if (!isNaN(newQuantity) && newQuantity >= 1) {
-            setCartItems(prevItems =>
-                prevItems.map(item =>
-                    item.id === id
-                        ? { ...item, quantity: newQuantity }
-                        : item
-                )
-            );
-        }
+            const updatedItems = [...prevItems];
+            const newQuantity = updatedItems[itemIndex].quantity + delta;
+
+            if (newQuantity <= 0) {
+                updatedItems.splice(itemIndex, 1);
+            } else {
+                updatedItems[itemIndex] = {
+                    ...updatedItems[itemIndex],
+                    quantity: newQuantity,
+                };
+            }
+
+            // Update cartWithDetails directly to avoid re-fetch
+            setCartWithDetails(prevDetails => {
+                const updatedDetails = prevDetails.map(detail =>
+                    detail.id === id
+                        ? { ...detail, quantity: newQuantity }
+                        : detail
+                );
+                return newQuantity <= 0
+                    ? updatedDetails.filter(detail => detail.id !== id)
+                    : updatedDetails;
+            });
+
+            return updatedItems;
+        });
     };
 
     const calculateTotal = () => {
-        return cartItems.reduce((sum, item) => sum + item.quantity * item.cost, 0).toFixed(2);
+        return cartWithDetails
+            .reduce((sum, item) => sum + item.quantity * item.cost, 0)
+            .toFixed(2);
     };
 
     const calculateTotalQuantity = () => {
-        return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        return cartWithDetails.reduce((sum, item) => sum + item.quantity, 0);
     };
 
     const handleMakePayment = () => {
         const totalCost = calculateTotal();
-        navigate('/payment', { state: { totalCost } });
+        const itemsMap = new Map(cartWithDetails.map(item => [item.id, item.quantity]));
+        navigate('/payment', { state: { totalCost, items: itemsMap } });
     };
 
     if (loading) return <p>Loading...</p>;
@@ -64,7 +181,7 @@ const ShoppingCart = () => {
             <NavBar />
             <div className={styles.cartContainer}>
                 <div className={styles.cartHeader}>
-                    <h1>(1770 x 860) shopping cart list</h1>
+                    <h1>Shopping Cart List</h1>
                 </div>
                 <div className={styles.cartSection}>
                     <table>
@@ -76,33 +193,35 @@ const ShoppingCart = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {cartItems.map(item => (
-                                <tr key={item.id}>
-                                    <td>{item.name}</td>
-                                    <td>
-                                        <button
-                                            className={styles.quantityButton}
-                                            onClick={() => handleQuantityChange(item.id, -1)}
-                                        >
-                                            -
-                                        </button>
-                                        <input
-                                            type="number"
-                                            value={item.quantity}
-                                            onChange={(e) => handleQuantityInput(item.id, e.target.value)}
-                                            className={styles.quantityInput}
-                                            min="1"
-                                        />
-                                        <button
-                                            className={styles.quantityButton}
-                                            onClick={() => handleQuantityChange(item.id, 1)}
-                                        >
-                                            +
-                                        </button>
-                                    </td>
-                                    <td>${(item.cost * item.quantity).toFixed(2)}</td>
+                            {cartWithDetails.length === 0 ? (
+                                <tr>
+                                    <td colSpan="3">Your cart is empty</td>
                                 </tr>
-                            ))}
+                            ) : (
+                                cartWithDetails.map(item => (
+                                    <tr key={item.id}>
+                                        <td>{item.name}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <button
+                                                    className={styles.BtnAble}
+                                                    onClick={() => handleQuantityChange(item.id, -1)}
+                                                >
+                                                    ⊖
+                                                </button>
+                                                <span className={styles.Qty}>{item.quantity}</span>
+                                                <button
+                                                    className={styles.BtnAble}
+                                                    onClick={() => handleQuantityChange(item.id, 1)}
+                                                >
+                                                    ⊕
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>${(item.cost * item.quantity).toFixed(2)}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                     <div className={styles.cartFooter}>
@@ -124,7 +243,13 @@ const ShoppingCart = () => {
                                 readOnly
                             />
                         </div>
-                        <button className={styles.payButton} onClick={handleMakePayment}>Make Payment</button>
+                        <button
+                            className={styles.payButton}
+                            onClick={handleMakePayment}
+                            disabled={cartWithDetails.length === 0}
+                        >
+                            Make Payment
+                        </button>
                     </div>
                 </div>
             </div>

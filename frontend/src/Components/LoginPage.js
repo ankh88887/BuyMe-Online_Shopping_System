@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
 import { useContext, useState } from "react";
 import { CurrentLoginUser } from "./CurrentLoginUser";
 
-export default function Login() {
+export default function LoginPage() {
   const [userNameOrEmail, setUserNameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -21,7 +21,6 @@ export default function Login() {
 
       if (response.ok) {
         const user = await response.json();
-
         setCurrentUser(user);
         navigate('/');
       } else {
@@ -75,4 +74,3 @@ export default function Login() {
     </div>
   );
 }
-
